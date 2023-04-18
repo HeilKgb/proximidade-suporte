@@ -13,7 +13,7 @@ from email.mime.application import MIMEApplication
 from email.header import Header
 from email.utils import parseaddr
 import logging
-from vmail.lib import config
+from handlers.vmail.lib import config
 
 
 def create_attachment(attach_files):

@@ -6,13 +6,13 @@ from tornado.gen import coroutine, engine, Task
 from bson import ObjectId as ObjId
 from logging import info
 import string
-from decorators import prepare_json
-from decorators import check_credentials
+from handlers.decorators.decorators import prepare_json
+from handlers.decorators.decorators import check_credentials
 from app.handlers.mongodb import MongoDBCRUD
 from handlers.http import HTTPUtils
 
-from decorators import api_authenticated
-from data_models import Activity
+from handlers.decorators.decorators import api_authenticated
+from handlers.data_models import Activity
 import redis
 
 

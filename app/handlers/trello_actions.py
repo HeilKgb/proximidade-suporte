@@ -10,7 +10,7 @@ from json import dumps, loads
 from operator import itemgetter
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
-from data_models import Activity
+from handlers.data_models import Activity
 
 
 class TrelloActionsHandler(TrelloApiHandler):

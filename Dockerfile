@@ -89,6 +89,7 @@ RUN pip install --upgrade -r /proximidade-suporte/requirements.txt \
     bcrypt \
     apscheduler \
     tornadose \
+    Crypto \
     requests
 # Fixing pymongo dependencies
 RUN pip uninstall -y pymongo && pip uninstall -y bson && pip install pymongo==3.12.1 && \

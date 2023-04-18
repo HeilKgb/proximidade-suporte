@@ -11,8 +11,8 @@ from bson import ObjectId as ObjId
 import re
 from handlers.vmail import sender
 from string import Template
-from data_models import Activity
-from decorators import api_authenticated, check_credentials
+from handlers.data_models import Activity
+from handlers.decorators.decorators import api_authenticated, check_credentials
 
 
 class ApplicationsHandler(BaseHandler):

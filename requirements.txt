@@ -8,3 +8,4 @@ requests
 boto3
 tornado-cors
 unidecode
+Crypto

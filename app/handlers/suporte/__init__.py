@@ -1,3 +1,3 @@
 """ Import VTrello module. """
 
-from vsupport.vtrello import VTrello
+from handlers.suporte.suporte import VTrello

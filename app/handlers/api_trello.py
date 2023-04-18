@@ -8,7 +8,7 @@ from datetime import datetime
 import random
 from dateutil import parser as dparser
 
-from data_models import Activity
+from handlers.data_models import Activity
 
 
 def check_trello(method):

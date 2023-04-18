@@ -14,7 +14,7 @@ from apscheduler.schedulers.tornado import TornadoScheduler
 from tornado.gen import engine
 
 from handlers.vmail import sender
-from suporte import VTrello
+from handlers.suporte.suporte import VTrello
 from lib.webhook_scheduling import WebHooks
 
 info('Setting timezone to UTC')

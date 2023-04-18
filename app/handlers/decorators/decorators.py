@@ -9,7 +9,8 @@ from urllib.parse import unquote
 from dateutil.relativedelta import relativedelta
 from tornado.web import decode_signed_value
 
-from risk3_utils import token_decode
+from handlers.utils.token import token_decode
+
 
 def https_required(method):
     @wraps(method)
@@ -29,9 +30,11 @@ def vpc_access_only(handler_class):
         def require_cross(handler, kwargs):
             info('This is a VPC Request')
             # Force to accept requests only in the VPC
-            remote_ip = handler.request.headers.get("X-Real-IP") or handler.request.remote_ip
+            remote_ip = handler.request.headers.get(
+                "X-Real-IP") or handler.request.remote_ip
             info('IP requesting VPC connection: ' + remote_ip)
-            cross_token = str(handler.request.headers.get('Cross-Key', '123456'))
+            cross_token = str(
+                handler.request.headers.get('Cross-Key', '123456'))
             info('Cross token: ' + str(cross_token))
             if 'CROSS_KEY' in handler.settings.keys():
                 cross_key = handler.settings['CROSS_KEY']
@@ -48,14 +51,17 @@ def vpc_access_only(handler_class):
                             info('The key is valid.')
                             return True
                     except Exception as e:
-                        info('Fail to convert cross token to be evaluated. {}'.format(e))
+                        info(
+                            'Fail to convert cross token to be evaluated. {}'.format(e))
                 info('The key is invalid.')
             else:
                 info('Check the configuration for CROSS_KEY variable on settings.py file.')
             handler.set_status(401)
             handler._transforms = []
-            handler.set_header('Content-Type', 'application/json; charset=UTF-8')
-            handler.write('{"status": "unauthorized", "message": "This resource is available only to logged users."}')
+            handler.set_header(
+                'Content-Type', 'application/json; charset=UTF-8')
+            handler.write(
+                '{"status": "unauthorized", "message": "This resource is available only to logged users."}')
             handler.finish()
             return False
 
@@ -81,6 +87,7 @@ def api_authenticated(method):
             return
         return method(self, *args, **kwargs)
     return wrapper
+
 
 def allowAdmin(method):
     @wraps(method)

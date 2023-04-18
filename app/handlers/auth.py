@@ -6,7 +6,7 @@ from tornado.gen import coroutine
 from tornado.gen import engine, Task
 from handlers.base import BaseHandler
 from json import loads
-from vdecorators import api_authenticated
+from handlers.decorators.decorators import api_authenticated
 from logging import info
 
 

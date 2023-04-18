@@ -3,6 +3,7 @@ services:
   proximidade:
     container_name: suporte-proximidade
     build: .
+    restart: on-failure
     ports:
       - "3232:3232"
     environment:
