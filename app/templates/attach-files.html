@@ -1,0 +1,107 @@
+<script type="text/ng-template" id="Warning.tpl.html">
+	<div name="Warning">
+		<div class="modal-header" ng-show="title">
+			<button type="button" class="close" ng-click="Close()">
+				<i class="material-icons">close</i>
+			</button>
+			<h4 class="modal-title" ng-bind-html="title"></h4>
+		</div>
+		<div class="modal-body">
+			<div class="wrapper">
+				<div class="instruction">
+					<p class="break-paragraph" ng-bind-html="message"></p>
+				</div>
+			</div>
+		</div>
+	</div>
+</script>
+
+<div class="attach-files-form">
+	<form name="ctrlAttach.form" ng-submit="Submit(ctrlAttach.form)">
+		<div class="modal-header" ng-show="title">
+			<button type="button" class="close" ng-click="Cancel()">
+				<i class="material-icons">close</i>
+			</button>
+			<h3 class="modal-title" ng-bind-html="title"></h3>
+		</div>
+		<div class="modal-body">
+			<div class="images">
+				<span ng-if="dataloading" class="text-right text-danger span-preloader">
+					<img src="/static/images/preloader.gif" class="preloader" />Carregando &hellip;
+				</span>
+				<div uib-carousel active="active" interval="0" no-wrap="true" no-transition="true">
+					<div uib-slide ng-repeat="attachment in attachments track by $index" index="attachment.id">
+						<img class="pdf-file" ng-if="attachment.type == 'application' && attachment.subtype == 'pdf'"
+							ng-src="{{!attachment.thumbnail.dataUri}}" ng-click="SetActive(attachment)">
+						<img class="ms-apps" ng-if="!attachment.thumbnail && attachment.subtype  && attachment.subtype != 'pdf'
+							&& attachment.subtype != 'text'" ng-src="{{!attachment.src}}" ng-click="SetActive(attachment)">
+						<div ng-if="!attachment.thumbnail && attachment.subtype == ''" class="attach-icon">
+							<div class="custom-icon" ng-class="attachment.extension">
+								<i class="icon-big material-icons">insert_drive_file</i>
+								<small>{{!attachment.extension}}</small>
+							</div>
+						</div>
+						<div ng-if="!attachment.thumbnail && attachment.subtype == 'text'" class="attach-icon-text">
+							<div class="custom-icon" ng-class="attachment.extension">
+								<i class="text-icon"></i>
+								<small>{{!attachment.extension}}</small>
+							</div>
+						</div>
+						<img class="img" ngf-src="!attachment.file.$error && attachment.file">
+						<audio class="audio" controls ngf-src="!attachment.file.$error && attachment.file"></audio>
+						<video class="video" controls ngf-src="!attachment.file.$error && attachment.file"></video>
+						<p class="filename">{{!attachment.file.name}}</p>
+						<div class="form-group legend">
+							<label for="legenda" class="sr-only">Adicionar um comentário:</label>
+							<input class="form-control" type="text" name="legenda" ng-model="attachment.comment"
+								placeholder="Adicione uma descrição ..." data-lpignore="true">
+						</div>
+					</div>
+				</div>
+			</div>
+
+			
+
+			<div class="div-thumbnails">
+				<div class="thumbnails">
+					<div ng-repeat="attachment in attachments track by attachment.id" class="div-repeat">
+						<span class="close" ng-click="remove(attachment)"><i class="material-icons">close</i></span>
+						<img ng-if="attachment.thumbnail" ng-src="{{!attachment.thumbnail.dataUri}}" ng-click="SetActive(attachment)">
+						<img ng-if="!attachment.thumbnail && attachment.src" ng-src="{{!attachment.src}}" ng-click="SetActive(attachment)">
+						<div ng-if="!attachment.thumbnail && !attachment.src && attachment.subtype == ''" class="attach-icon" ng-click="SetActive(attachment)">
+							<div class="custom-icon" ng-class="attachment.extension">
+								<i class="icon-big material-icons">insert_drive_file</i>
+								<small>{{!attachment.extension}}</small>
+							</div>
+						</div>
+						<div ng-if="!attachment.thumbnail && !attachment.src && attachment.subtype == 'text'" class="attach-icon-text" ng-click="SetActive(attachment)">
+							<div class="custom-icon" ng-class="attachment.extension">
+								<i class="text-icon"></i>
+								<small>{{!attachment.extension}}</small>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="div-input form-group">
+					<div class="is-empty is-fileinput">
+						<input type="file" id="files" name="file" ng-disabled="!ctrlAttach.form.$valid"
+							title="Clique aqui para adicionar mais arquivos" load-files-on-change="LoadFiles" multiple/>
+						<i class="material-icons">add</i>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="modal-footer">
+			<div class="div-btn-add form-group">
+				<button ng-if="actionType=='upload'" type="submit" class="btn btn-primary upload-files"
+					tooltip-placement="top" uib-tooltip="Enviar os Arquivos">
+					Enviar
+				</button>
+				<button ng-if="actionType=='attach'" type="submit" class="btn btn-primary upload-files"
+					tooltip-placement="top" uib-tooltip="Adicionar os Arquivos">
+					Adicionar {{!attachFileType}}
+				</button>
+			</div>
+		</div>
+	</form>
+</div>

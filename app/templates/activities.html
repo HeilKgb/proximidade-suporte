@@ -1,0 +1,223 @@
+<script type="text/ng-template" id="delete.activity.tpl.html">
+	<div name="DlgDelete" class="dlg-delete">
+		<div class="modal-header" ng-show="title">
+			<h4 class="modal-title" ng-bind-html="title"></h4>
+		</div>
+		<div class="modal-body" ng-bind-html="message">
+		</div>
+		<div class="modal-footer">
+			<button type="button" class="btn btn-primary" ng-click="ok()">OK</button>
+			<button type="button" class="btn btn-default" ng-click="cancel()">Cancel</button>
+		</div>
+	</div>
+</script>
+
+<div class="activities">
+	<header>
+		<section class="pull-right">
+			<span class="text-muted">Ordenar por:&nbsp; </span>
+			<div class="btn-group order-grp" role="group">
+				<button type="button" ng-class="{active:predicate === 'created_at', dropup:reverse}" class="btn btn-default btn-sm" ng-click="order('created_at')">Data Criação
+					<span ng-show="predicate === 'created_at'">
+						<b class="caret"></b>
+					</span>
+				</button>
+				<button type="button" ng-class="{active:predicate === 'title', dropup:reverse}" class="btn btn-default btn-sm" ng-click="order('title')">Título
+					<span ng-show="predicate === 'title'">
+						<b class="caret"></b>
+					</span>
+				</button>
+				<button type="button" ng-class="{active:predicate === 'module.name', dropup:reverse}" class="btn btn-default btn-sm" ng-click="order('module.name')">Aplicativo
+					<span ng-show="predicate === 'module.name'">
+						<b class="caret"></b>
+					</span>
+				</button>
+				<button type="button" ng-class="{active:predicate === 'activity_phase', dropup:reverse}" class="btn btn-default btn-sm" ng-click="order('activity_phase')">Fase
+					<span ng-show="predicate === 'activity_phase'">
+						<b class="caret"></b>
+					</span>
+				</button>
+				<button type="button" ng-class="{active:predicate === 'activity_status.status', dropup:reverse}" class="btn btn-default btn-sm" ng-click="order('activity_status.status')">Estado
+					<span ng-show="predicate === 'activity_status.status'">
+						<b class="caret"></b>
+					</span>
+				</button>
+			</div>
+		</section>
+		<h4 class="page-title text-muted">
+			Solicitações:
+		</h4>
+	</header>
+	<div class="page-body">
+		<h4 class="page-title text-muted">Solicitações Abertas</h4>
+		<div class="row">
+			<div class="col-sm-6 col-md-4" ng-if="activity.activity_status.status!='finalizado'" ng-repeat="(key, activity) in lt.activities | orderBy:predicate:reverse | date_filter: ['title','description', 'created_at', 'updated_at'] : filter_input : 'dd/MM/yyyy HH:mm' track by $index">
+				<div class="card click">
+					<div class="card-body" ui-sref="solicitacao({'id': activity.id})">
+						<h4>{{!activity.title}}</h4>
+						<div class="activity-module text-muted">
+							<div class="div-label">Aplicativo: </div>
+							<div class="div-data"><b><span> {{!activity.module.name}}</span></b></div>
+						</div>
+						<div class="activity-type text-muted">
+							<div class="div-label">Tipo:</div>
+							<div class="div-data"><b><span> {{! types_by_name[activity.activity_type] }}</span></b></div>
+						</div>
+						<div class="activity-status text-muted">
+							<div class="div-label">Estado:</div>
+							<div class="div-data"><span class="badge" ng-class="activity.activity_status.status">{{!activity.activity_status.status}}</span></div>
+						</div>
+						<div class="activity-phase text-muted">
+							<div class="div-label">Fase:</div>
+							<div class="div-data"><span class="badge" ng-class="activity.activity_phase">{{!activity.activity_phase_label}}</span></div>
+						</div>
+						<div class="activity-organizations text-muted" ng-if="activity.organizations">
+							<div class="div-label">Visível para:</div>
+							<div class="div-data">
+								<span ng-repeat="(key, org) in activity.organizations">
+									<b>{{!org}}{{! (activity.organizations.length>1 && key < activity.organizations.length-1) ? ', ' : ' ' }}</b>
+								</span>
+							</div>
+						</div>
+						<div class="activity-created_at text-muted" ng-if="activity.created_by">
+							<div class="div-label">Solicitado por:</div>
+							<div class="div-data">
+								<b>{{!activity.created_by}}</b>
+							</div>
+						</div>
+						<div class="activity-created_at text-muted" ng-if="activity.created_at">
+							<div class="div-label">Solicitado em:</div>
+							<div class="div-data">
+								<b>{{!activity.created_at | date: "medium"}}</b>
+							</div>
+						</div>
+						<div class="activity-updated_at text-muted">
+							<div class="div-label">Atualização:</div>
+							<div class="div-data">
+								<b>{{! activity.updated_at | date: "medium" }}</b>
+							</div>
+						</div>
+						<div class="description text-muted">
+							<div class="div-label">Descrição:</div>
+							<div class="div-data"><b>{{!activity.description}}</b></div>
+						</div>
+					</div>
+
+					<div class="card-foot">
+						<div class="btn-group pull-right" uib-dropdown is-open="status.isopen" ng-if="lt.config.admin">
+							<button id="single-button" type="button" class="btn btn-icon" uib-dropdown-toggle ng-disabled="disabled" uib-tooltip="Mais&nbsp;ações">
+								<i class="material-icons">more_vert</i>
+							</button>
+							<ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="single-button">
+								<li role="menuitem">
+									<edit-activity use-ctrl="EditActivityCtrl" use-ctrl-as="ctrlEdit" use-template-url="edit-activity.html" form-size="" window-class="edit-activity" activity="activity" config="lt.config" update-after-edit="UpdateActivity(data)">
+								</li>
+								<li role="menuitem" ng-if="lt.config.admin">
+									<a href="#" ng-if="activity.closed" ng-click="ArchiveActivity(activity, false)">Restaurar<i class="material-icons">unarchive</i></a>
+									<a href="#" ng-if="!activity.closed" ng-click="ArchiveActivity(activity, true)">Arquivar<i class="material-icons">archive</i></a>
+								</li>
+								<li role="menuitem" ng-if="lt.config.admin">
+									<a href="#" ng-click="DeleteActivity(activity)">Remover<i class="material-icons">delete</i></a>
+								</li>
+							</ul>
+						</div>
+						<button ng-if="lt.config.admin" type="button" tooltip-placement="top-left" uib-tooltip="{{! activity.mobile ? 'Desativar' : 'Ativar' }}  notificação no aplicativo" class="btn btn-icon active" ng-click="ShowMobile(activity, !activity.mobile)">
+							<i ng-if="!activity.mobile" class="material-icons">smartphone</i>
+							<i ng-if="activity.mobile" class="material-icons">phonelink_erase</i>
+						</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		<h4 class="page-title text-muted">Solicitações Finalizadas</h4>
+		<div class="row text-center">
+			<div class="table-responsive">
+				<table class="table table-hover table-striped table-solo table-fixed">
+					<thead>
+						<tr>
+							<th>n.</th>
+							<th class="title text-center">
+								<a ng-click="order('title')" ng-class="{active:orderby.predicate === 'title'}">Título</a>
+								<span ng-show="orderby.predicate === 'title'">
+									<b class="caret" ng-if="orderby.reverse"></b>
+									<span class="dropup"><b class="caret" ng-if="!orderby.reverse"></b></span>
+								</span>
+							</th>
+							<th class="description text-center">
+								<a ng-click="order('description')" ng-class="{active:orderby.predicate === 'description'}">Descrição</a>
+								<span ng-show="orderby.predicate === 'description'">
+									<b class="caret" ng-if="orderby.reverse"></b>
+									<span class="dropup"><b class="caret" ng-if="!orderby.reverse"></b></span>
+								</span>
+							</th>
+							<th class="module_name text-center">
+								<a ng-click="order('module.name')" ng-class="{active:orderby.predicate === 'module.name'}">Aplicativo</a>
+								<span ng-show="orderby.predicate === 'module.name'">
+									<b class="caret" ng-if="orderby.reverse"></b>
+									<span class="dropup"><b class="caret" ng-if="!orderby.reverse"></b></span>
+								</span>
+							</th>
+							<th class="activity_type text-center">
+								<a ng-click="order('activity_type')" ng-class="{active:orderby.predicate === 'activity_type'}">Tipo</a>
+								<span ng-show="orderby.predicate === 'activity_type'">
+									<b class="caret" ng-if="orderby.reverse"></b>
+									<span class="dropup"><b class="caret" ng-if="!orderby.reverse"></b></span>
+								</span>
+							</th>
+							<th class="organizations text-center" ng-if="lt.org=='Prox_suporte'">
+								<a ng-click="order('organizations')" ng-class="{active:orderby.predicate === 'organizations'}">Visível para:</a>
+								<span ng-show="orderby.predicate === 'organizations'">
+									<b class="caret" ng-if="orderby.reverse"></b>
+									<span class="dropup"><b class="caret" ng-if="!orderby.reverse"></b></span>
+								</span>
+							</th>
+							<th class="created_by text-center">
+								<a ng-click="order('created_by')" ng-class="{active:orderby.predicate === 'created_by'}">Solicitado por</a>
+								<span ng-show="orderby.predicate === 'created_by'">
+									<b class="caret" ng-if="orderby.reverse"></b>
+									<span class="dropup"><b class="caret" ng-if="!orderby.reverse"></b></span>
+								</span>
+							</th>
+							<th class="created_at text-center">
+								<a ng-click="order('created_at')" ng-class="{active:orderby.predicate === 'created_at'}">Registro:</a>
+								<span ng-show="orderby.predicate === 'created_at'">
+									<b class="caret" ng-if="orderby.reverse"></b>
+									<span class="dropup"><b class="caret" ng-if="!orderby.reverse"></b></span>
+								</span>
+							</th>
+							<th class="updated_at text-center">
+								<a ng-click="order('updated_at')" ng-class="{active:orderby.predicate === 'updated_at'}">Atualização:</a>
+								<span ng-show="orderby.predicate === 'updated_at'">
+									<b class="caret" ng-if="orderby.reverse"></b>
+									<span class="dropup"><b class="caret" ng-if="!orderby.reverse"></b></span>
+								</span>
+							</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr ui-sref="solicitacao({'id': activity.id})" ng-if="activity.activity_status.status=='finalizado'" ng-repeat="(key, activity) in lt.activities | orderBy:predicate:reverse | date_filter: ['title','description', 'created_at', 'updated_at'] : filter_input : 'dd/MM/yyyy HH:mm' track by $index">
+							<td class="text-center">{{!$index}}</td>
+							<td class="text-center" title="deck {{!activity.title}}">{{!activity.title}}</td>
+							<td class="text-center">{{!activity.module.name}}</td>
+							<td class="text-center">{{!activity.description}}</td>
+							<td class="text-center">{{!types_by_name[activity.activity_type]}}</td>
+							<td class="text-center" ng-if="lt.org=='Prox_suporte'">
+								{{! activity.organizations | parseArray }}
+							</td>
+							<td class="text-center">{{!activity.created_at}}</td>
+							<td class="text-center" title="Solicitado em: {{!activity.created_at | date:'dd/MM/yyyy hh:mm'}}">
+								{{!activity.created_at | date:'dd/MM/yyyy hh:mm'}}
+							</td>
+							<td class="text-center" title="atualizado em: {{!activity.updated_at | date:'dd/MM/yyyy hh:mm'}}">
+								{{!activity.updated_at | date:'dd/MM/yyyy hh:mm'}}
+							</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+		</div>
+
+		<add-activity use-ctrl="AddActivityCtrl" use-ctrl-alias="ctrlAdd" use-template-url="add-activity.html" form-size="" window-class="add-activity" config="lt.config" update-after-add="UpdateAfterAdd(data)">
+		</add-activity>
+	</div>
+</div>

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="pt-BR" ng-app="suporte">
+	<head>
+		<base href="/">
+		<meta charset="utf-8">
+		<title>Suporte LT - Software Life Track / Life Log - Relatório de Atividades de Manutenção e Melhoria Contínua</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<meta name="description" content="">
+		<meta name="author" content="Makoto Kadowaki">
+		{% block head %}
+		{% end %}
+
+		<link href="{{ static_url("bower_components/angular-notify/dist/angular-notify.min.css") }}" rel="stylesheet">
+		<link href="{{ static_url("bower_components/bootstrap/dist/css/bootstrap.min.css") }}" rel="stylesheet">
+		<link href="{{ static_url("bower_components/angular-ui-select/dist/select.min.css") }}" rel="stylesheet">
+		<link href="{{ static_url("bower_components/angular-loading-bar/build/loading-bar.min.css") }}" rel="stylesheet">
+		{#<!-- Material Design fonts -->#}
+		<link href="//fonts.googleapis.com/css?family=Roboto:300,400,500,700" rel="stylesheet" type="text/css">
+		{#<!-- Google Material Icons -->#}
+		<link href="https://fonts.googleapis.com/css?family=Material+Icons|Material+Icons+Outlined|Material+Icons+Round" rel="stylesheet"  type="text/css">
+		{#<!-- Bootstrap Material Design -->#}
+		<link href="{{ static_url("bower_components/bootstrap-material-design/dist/css/bootstrap-material-design.min.css") }}" rel="stylesheet" type="text/css">
+		<link href="{{ static_url("bower_components/bootstrap-material-design/dist/css/ripples.min.css") }}" rel="stylesheet" type="text/css" >
+		{#<!-- Pan Zoom -->#}
+		<link href="{{ static_url("bower_components/angular-pan-zoom/release/panzoomwidget.css") }}" rel="stylesheet">
+		{#<!-- Custom Design -->#}
+		<link href="{{ static_url("css/styles.min.css") }}" rel="stylesheet">
+		<style type="text/css">
+			{% block css %}
+			{% end %}
+		</style>
+
+		{% block js %}
+		{% end %}
+
+		<link rel="shortcut icon" href="{{ static_url("icons/favicon.ico") }}">
+	</head>
+
+	{% block tag_body %}
+	<body>
+	{% end %}
+
+		{% block alertbox %}
+		{% end %}
+
+		{% block content %}
+		{% end %}
+
+		<footer>
+		</footer>
+
+	{% block bootstrap_load %}
+		{#<!--  Placed at the end of the document so the pages load faster -->#}
+		<script type="text/javascript" src="{{ static_url("bower_components/jquery/dist/jquery.min.js") }}"></script>
+		<script type="text/javascript" src="{{ static_url("bower_components/lodash/dist/lodash.min.js") }}"></script>
+		<script type="text/javascript" src="{{ static_url("bower_components/angular/angular.min.js") }}"></script>
+		<script type="text/javascript" src="{{ static_url("bower_components/angular-i18n/angular-locale_pt-br.js") }}" ></script>
+		<script type="text/javascript" src="{{ static_url("bower_components/angular-messages/angular-messages.min.js") }}"></script>
+		<script type="text/javascript" src="{{ static_url("bower_components/angular-animate/angular-animate.min.js") }}"></script>
+		<script type="text/javascript" src="{{ static_url("bower_components/angular-sanitize/angular-sanitize.min.js") }}"></script>
+		<script type="text/javascript" src="{{ static_url("bower_components/angular-ui-router/release/angular-ui-router.min.js") }}"></script>
+		<script type="text/javascript" src="{{ static_url("bower_components/angular-ui-router/release/stateEvents.min.js") }}" ></script>
+		<script type="text/javascript" src="{{ static_url("bower_components/angular-bootstrap/ui-bootstrap-tpls.min.js") }}"></script>
+		<script type="text/javascript" src="{{ static_url("bower_components/angular-ui-select/dist/select.min.js") }}"></script>
+		<script type="text/javascript" src="{{ static_url("bower_components/angular-cookies/angular-cookies.min.js") }}"></script>
+		<script type="text/javascript" src="{{ static_url("bower_components/ngstorage/ngStorage.min.js") }}" ></script>
+		<script type="text/javascript" src="{{ static_url("bower_components/angular-loading-bar/build/loading-bar.min.js") }}" ></script>
+		<script type="text/javascript" src="{{ static_url("bower_components/angular-notify/dist/angular-notify.min.js") }}" ></script>
+		<script type="text/javascript" src="{{ static_url("bower_components/angular-bootstrap-material/dist/angular-bootstrap-material.min.js") }}" ></script>
+		<script type="text/javascript" src="{{ static_url("bower_components/angular-strap/dist/angular-strap.min.js") }}"></script>
+		<script type="text/javascript" src="{{ static_url("bower_components/angular-strap/dist/angular-strap.tpl.min.js") }}"></script>
+		<script type="text/javascript" src="{{ static_url("bower_components/angular-input-modified/dist/angular-input-modified.min.js") }}"></script>
+		<script type="text/javascript" src="{{ static_url("node_modules/angular-input-masks/releases/angular-input-masks-standalone.min.js") }}"></script>
+		<script type="text/javascript" src="{{ static_url("bower_components/ng-file-upload/ng-file-upload.min.js") }}" ></script>
+		<script type="text/javascript" src="{{ static_url("bower_components/bootstrap-ui-datetime-picker/dist/datetime-picker.min.js") }}"></script>
+		<script type="text/javascript" src="{{ static_url("bower_components/angular-linkify/angular-linkify.js") }}" ></script>
+		<script type="text/javascript" src="{{ static_url("bower_components/hamsterjs/hamster.js") }}"></script>
+		<script type="text/javascript" src="{{ static_url("bower_components/angular-mousewheel/mousewheel.js") }}"></script>
+		<script type="text/javascript" src="{{ static_url("bower_components/angular-pan-zoom/release/panzoom.min.js") }}"></script>
+		<script type="text/javascript" src="{{ static_url("lib/capture-video-frame.min.js") }}" ></script>
+		<script type="text/javascript" src="{{ static_url("lib/image-crop.min.js") }}" ></script>
+		<script type="text/javascript" src="{{ static_url("lib/pdfjs/build/pdf.min.js") }}" ></script>
+		<script type="text/javascript" src="application-config.js"></script>
+	{% end %}
+
+	{% block include_js %}
+	{%end%}
+
+	</body>
+</html>

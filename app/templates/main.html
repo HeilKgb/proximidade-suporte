@@ -1,0 +1,144 @@
+{% extends "../templates/base.html" %}
+{% block head %}
+{% end %}
+
+{% block css %}
+{% end %}
+
+{% block js %}
+{% end %}
+
+{% block tag_body %}
+
+<body ng-controller="MainCtrl">
+	{% end %}
+
+	{% block content %}
+	<nav class="navbar navbar-default navbar-fixed-top" role="navigation" ng-init="isNavCollapsed=true" ng-cloak>
+		<div class="container-fluid">
+			<div class="navbar-header">
+				<button type="button" class="navbar-toggle collapsed" data-toggle="collapse" ng-click="isNavCollapsed = !isNavCollapsed" aria-expanded="false">
+					<span class="sr-only">Toggle navigation</span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+					<span class="icon-bar"></span>
+				</button>
+				<a class="navbar-brand" ng-click="goto_main();">
+					<img ng-src="{{ static_url(" images/logo.png") }}" ng-srcset="{{ static_url(" images/logo_prox@2x.png") }} 2x" alt="Prox_suporte" />
+				</a>
+				<h3 class="navbar-text">SUPORTE</h3>
+			</div>
+
+			<div class="nav navbar-nav navbar-right notification pull-right" on-toggle="toggled(open)">
+				<span ng-if="profilePopover.user">
+					<button ng-disabled="!profilePopover.user.registered" ng-if="appsPopover.show_apps" type="button" uib-popover-template="appsPopover.template" popover-placement="auto bottom" popover-is-open="appsPopover.isOpen" popover-trigger="'outsideClick'" class="btn btn-icon apps-icon" title="Alternar aplicativos">
+						<i class="material-icons">apps</i>
+					</button>
+					<button uib-popover-template="profilePopover.template" popover-placement="auto bottom" popover-is-open="profilePopover.isOpen" popover-trigger="'outsideClick'" class="btn btn-fab" ng-click="UserData()">
+						<img ng-src="{{!'data:image/png;base64,'+profilePopover.user.avatar}}" ng-srcset="{{!'data:image/png;base64,'+profilePopover.user.avatar}} 2x" class="img-circle" />
+					</button>
+				</span>
+			</div>
+		</div>
+	</nav>
+
+	<script type="text/ng-template" id="profileTemplate.html">
+			<div class="row profile-info">
+				<div class="col-xs-3 text-center">
+					<img ng-src="{{!'data:image/png;base64,'+profilePopover.user.avatar}}"
+						ng-srcset="{{!'data:image/png;base64,'+profilePopover.user.avatar}} 2x" class="img-circle"/>
+				</div>
+				<div class="col-xs-9">
+					<h4>{{!profilePopover.user.fullname}}</h4>
+					<p>
+						{{!profilePopover.user.email}}
+					</p>
+					<p>
+						Membro desde:
+						{{!profilePopover.user.created_at | date : 'dd/MM/yyyy'}}<br>
+					</p>
+					<p>
+						<button class="btn btn-primary btn-raised" ng-click="profile()">Minha conta</button>
+					</p>
+				</div>
+			</div>
+			<div class="popover-footer text-right">
+				<a ng-if="profilePopover.user.role == 'Administrator'" ng-click="administrate()" class="btn btn-default pull-left">Administrar</a>
+				<a ng-click="logout()" class="btn btn-danger">Sair</a>
+			</div>
+		</script>
+
+	<script type="text/ng-template" id="appsTemplate.html">
+			<div class="row app-drawer">
+				<div class="col-xs-4 text-center" ng-repeat="app in appsPopover.apps track by $index" ng-if="app.id!='suporte-prox'">
+					<a ng-href="{{!app.url}}" ng-click="appsPopover.isOpen=false"><img class="img-responsive center-block" ng-src="{{!app.icon}}" />{{!app.name}}</a>
+				</div>
+			</div>
+		</script>
+
+	<noscript>
+		<div class="nojs">Javascript is either disabled or not supported in your browser. Please enable it or use a Javascript enabled browser.</div>
+	</noscript>
+
+	<div id="id_notify" ng-click="DismissNotify()"></div>
+	<span ng-if="mainloading" class="text-right text-danger span-preloader">
+		<img src="/static/images/preloader.gif" class="preloader" />Recarregando. Aguarde por favor&hellip;
+	</span>
+	<div ui-view class="main-view"></div>
+
+	<script type="text/ng-template" id="confirmacao.tpl.html">
+			<div class="dlg-delete">
+				<div class="modal-header" ng-show="title">
+					<button type="button" class="close btn btn-icon" ng-click="Cancel()">
+						<i class="material-icons">close</i>
+					</button>
+					<h3 class="modal-title" ng-bind-html="title"></h3>
+				</div>
+				<div class="modal-body">
+					<form name="form" ng-submit="submit(form)">
+						<p class="lead" ng-bind-html="message"></p>
+						<div class="user-actions">
+							<button class="btn btn-120-mr btn-raised btn-primary" type="button" ng-click="Ok()">Sim</button>
+							<button class="btn btn-120-mr btn-raised btn-default" type="cancel" ng-click="Cancel()">Não</button>
+						</div>
+					</form>
+				</div>
+			</div>
+		</script>
+
+	{% end %}
+
+	{% block include_js %}
+	<script type="text/javascript" src="{{ static_url(" js/app.js") }}"></script>
+	<script type="text/javascript" src="{{ static_url(" js/controllers/suporte.controllers.js") }}"></script>
+	<script type="text/javascript" src="{{ static_url(" js/controllers/activities.controller.js") }}"></script>
+	<script type="text/javascript" src="{{ static_url(" js/controllers/dlg.confirm.controller.js") }}"></script>
+	<script type="text/javascript" src="{{ static_url(" js/controllers/add-activity.controller.js") }}"></script>
+	<script type="text/javascript" src="{{ static_url(" js/controllers/attach-files.controller.js") }}"></script>
+	<script type="text/javascript" src="{{ static_url(" js/controllers/edit-activity.controller.js") }}"></script>
+	<script type="text/javascript" src="{{ static_url(" js/controllers/timeline.controller.js") }}"></script>
+	<script type="text/javascript" src="{{ static_url(" js/controllers/carousel.media.controller.js") }}"></script>
+
+	{#<!--
+		<script type="text/javascript" src="{{ static_url("js/controllers/append-file.controller.js") }}"></script>
+		-->#}
+
+	<script type="text/javascript" src="{{ static_url(" js/directives/suporte.directives.js") }}"></script>
+	<script type="text/javascript" src="{{ static_url(" js/directives/dlg.confirm.directive.js") }}"></script>
+	<script type="text/javascript" src="{{ static_url(" js/directives/add-activity.directive.js") }}"></script>
+	<script type="text/javascript" src="{{ static_url(" js/directives/attach-files.directive.js") }}"></script>
+	<script type="text/javascript" src="{{ static_url(" js/directives/edit-activity.directive.js") }}"></script>
+
+	{#<!-- <script type="text/javascript" src="{{ static_url("js/directives/append-file.directive.js") }}"></script>-->#}
+
+	<script type="text/javascript" src="{{ static_url(" js/services/suporte.services.js") }}"></script>
+	<script type="text/javascript" src="{{ static_url(" js/services/auth.service.js") }}"></script>
+	<script type="text/javascript" src="{{ static_url(" js/services/data.service.js") }}"></script>
+	<script type="text/javascript" src="{{ static_url(" js/services/notify.service.js") }}"></script>
+	<script type="text/javascript" src="{{ static_url(" js/services/dlg.confirm.service.js") }}"></script>
+	<script type="text/javascript" src="{{ static_url(" js/services/modal.page.service.js") }}"></script>
+
+	{#<!-- <script type="text/javascript" src="{{ static_url("js/services/pager.service.js") }}" ></script> -->
+	<!-- <script type="text/javascript" src="{{ static_url("js/services/bid.notify.service.js") }}" ></script> -->#}
+
+	{% end %}

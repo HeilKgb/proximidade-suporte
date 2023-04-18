@@ -1,0 +1,59 @@
+<div class="add-activity-form">
+	<form name="ctrlAdd.form" ng-submit="Submit(ctrlAdd.form)">
+		<div class="modal-header" ng-show="title">
+			<h4 class="modal-title" ng-bind-html="title"></h4>
+		</div>
+		<div class="modal-body">
+			<div class="form-inline-group">
+				<label for="description" class="control-label">Descrição</label>
+				<textarea class="form-control text-justify" name="description"
+					placeholder="Descreva brevemente o problema"
+					auto-resize ng-required="true" rows="0" maxlength="1024"
+					ng-model="activity.description" tabindex="0"
+					validation-error="!activity.description ? 'Por favor, descreva o brevemente o problema' : ''">
+				</textarea>
+			</div>
+			<div class="form-inline-group">
+				<attach-files
+					use-ctrl="AttachFilesCtrl"
+					use-template-url="attach-files.html"
+					modal-status="modalStatus"
+					form-size="lg"
+					window-class="attach-files"
+					attachments="attachments"
+					action-type="attach"
+					attached-files="AttachedFiles(attachments)">
+				</attach-files>
+			</div>
+			<div>
+				<div class="thumbnails">
+					<div ng-repeat="attachment in attachments track by attachment.id" class="div-repeat">
+						<span class="close" ng-click="RemoveAttachment(attachment)" title="remover arquivo"><i class="material-icons">close</i></span>
+						<img ng-if="attachment.thumbnail" ng-src="{{!attachment.thumbnail.dataUri}}">
+						<img ng-if="!attachment.thumbnail && attachment.src" ng-src="{{!attachment.src}}">
+						<div ng-if="!attachment.thumbnail && !attachment.src && attachment.subtype == ''" class="attach-icon">
+							<div class="custom-icon" ng-class="attachment.extension">
+								<i class="icon-big material-icons">insert_drive_file</i>
+								<small>{{!attachment.extension}}</small>
+							</div>
+						</div>
+						<span>{{!attachment.file.name}} {{!attachment.comment}}</span>
+						<div ng-if="!attachment.thumbnail && !attachment.src && attachment.subtype == 'text'" class="attach-icon-text">
+							<div class="custom-icon" ng-class="attachment.extension">
+								<i class="text-icon"></i>
+								<small>{{!attachment.extension}}</small>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="modal-footer">
+			<button type="button" class="btn btn-default" ng-click="Cancel()">Cancelar</button>
+			<button type="submit" class="btn btn-primary">Criar Solicitação</button>
+			<span ng-if="dataloading" class="text-right text-danger span-preloader">
+				<img src="/static/images/preloader.gif" class="preloader" />Salvando&hellip;
+			</span>
+		</div>
+	</form>
+</div>

@@ -1,0 +1,264 @@
+<script type="text/ng-template" id="change.phase.tpl.html">
+	<div class="modal-header" ng-show="title">
+		<h4 class="modal-title" ng-bind-html="title"></h4>
+	</div>
+	<div class="modal-body dlg-change-phase">
+		<p class="lead" ng-bind-html="message"></p>
+		<textarea class="form-control" placeholder="Comentário" cols="8" rows="4" ng-model="comment.text"></textarea>
+	</div>
+	<div class="modal-footer">
+		<button class="btn btn-default" ng-click="cancel()">Cancelar</button>
+		<button class="btn btn-primary" ng-click="ok()">Sim</button>
+	</div>
+</script>
+
+<div class="activity-card" ng-show="views.option == 'main'">
+	<header>
+		<h3>
+			<a class="btn btn-primary btn-icon go-back" ui-sref="main">
+				<i class="material-icons-outlined">arrow_back</i>
+			</a> {{!activity.title}}
+			<div class="loading" ng-if="loading"></div>
+		</h3>
+	</header>
+	<div class="activity-card-body well">
+		<div class="row">
+			<div class="col-sm-5">
+				<div class="activity-module text-muted">
+					<div class="div-label">Aplicativo: </div>
+					<div class="div-data-padding"><b> {{!activity.module.name}}</b></div>
+				</div>
+				<div class="activity-type text-muted">
+					<div class="div-label">Tipo de solicitação:</div>
+					<div class="div-data-padding"><b> {{! types_by_name[activity.activity_type] }}</b></div>
+				</div>
+				<div class="activity-created_at text-muted" ng-if="activity.created_by">
+					<div class="div-label">Criado por:<br><span>em:</span></div>
+					<div class="div-data-padding">
+						<b>{{!activity.created_by}}<br>{{!activity.created_at | date: "medium"}}</b>
+					</div>
+				</div>
+			</div>
+			<div class="col-sm-4">
+				<div class="activity-status text-muted">
+					<div class="div-label">Estado:</div>
+					<div class="div-data-padding">
+						<span class="badge" ng-class="activity.activity_status.status">{{!activity.activity_status.status}}</span>
+					</div>
+				</div>
+				<div class="activity-phase text-muted">
+					<div class="div-label">Fase:</div>
+					<div class="div-data-padding">
+						<span class="badge" ng-class="activity.activity_phase">{{!activity.activity_phase_label}}</span>
+					</div>
+				</div>
+				<div class="activity-organizations text-muted" ng-if="activity.organizations">
+					<div class="div-label-92">Visível para:</div>
+					<div class="div-data-padding"><b>
+						<span ng-repeat="(key, org) in activity.organizations">
+							{{!org}}{{! (activity.organizations.length>1 && key < activity.organizations.length-1) ? ', ' : ' '}}
+						</span></b>
+					</div>
+				</div>
+			</div>
+			<div class="col-sm-3 control" ng-if="config.admin">
+				<div class="phase-control">Fase:
+					<button class="btn btn-default btn-icon" uib-tooltip="Avançar" ng-disabled="btn_disabled.avancar"
+						ng-click="AdvanceStage(activity.activity_phase)">
+						<i class="material-icons">play_circle_fill</i>
+					</button>
+				</div>
+				<div class="state-control">Estado:
+					<button class="btn btn-default btn-icon" uib-tooltip="Pausar"
+						ng-if="activity.activity_status.status == 'executando'" ng-disabled="btn_disabled.pausar"
+						ng-click="ChangeStatus('pausado')" dlg-confirm dlg-confirm-header=""
+						dlg-confirm-txt="Deseja pausar esta atividade?" dlg-confirm-ok="Sim" dlg-confirm-cancel="Cancelar">
+						<i class="material-icons">pause_circle_filled</i>
+					</button>
+					<button class="btn btn-default btn-icon" uib-tooltip="Executar"
+						ng-if="activity.activity_status.status == 'pausado'" ng-disabled="btn_disabled.executar"
+						ng-click="ChangeStatus('executando')" dlg-confirm dlg-confirm-header=""
+						dlg-confirm-txt="Deseja reiniciar esta atividade?" dlg-confirm-ok="Sim" dlg-confirm-cancel="Cancelar">
+						<i class="material-icons">play_circle_filled</i>
+					</button>
+					<button class="btn btn-default btn-icon" uib-tooltip="Cancelar" ng-disabled="btn_disabled.cancelar"
+						ng-click="ChangeStatus('cancelado')" dlg-confirm dlg-confirm-header=""
+						dlg-confirm-txt="Deseja cancelar esta atividade? Uma vez cancelada, não poderá ser reiniciada."
+						dlg-confirm-ok="Sim" dlg-confirm-cancel="Cancelar">
+						<i class="material-icons">remove_circle</i>
+					</button>
+					<button class="btn btn-default btn-icon" uib-tooltip="Finalizar" ng-disabled="btn_disabled.finalizar"
+						ng-click="ChangeStatus('finalizado')" dlg-confirm dlg-confirm-header=""
+						dlg-confirm-txt="Deseja finalizar esta atividade? Uma vez finalizada, não poderá ser reiniciada."
+						dlg-confirm-ok="Sim" dlg-confirm-cancel="Cancelar">
+						<i class="material-icons">check_circle</i>
+					</button>
+				</div>
+			</div>
+		</div>
+		<div class="description text-muted">
+			<span class="description-label">Descrição:</span><b> {{!activity.description}} </b>
+		</div>
+	</div>
+
+	<div class="timeline">
+		<ul class="fase">
+			<li class="post" ng-if="activity.activity_status.status == 'executando'">
+				<form class="form-horizontal">
+					<textarea class="form-control"
+						placeholder="Mensagem"
+						cols="8" rows="4" auto-resize
+						ng-model="comment.text">
+					</textarea>
+					<button ng-disabled="comment.text =='' || activity.activity_status.status != 'executando'"
+						class="btn btn-primary pull-right" ng-click="AddNewComment()">Enviar
+					</button>
+					<attach-files
+						use-ctrl="AttachFilesCtrl"
+						use-template-url="attach-files.html"
+						modal-status="modalStatus"
+						form-size="lg"
+						window-class="attach-files"
+						attachments="attachments"
+						action-type="upload"
+						attached-files="UploadFiles(attachments)">
+					</attach-files>
+					<div class="form-group" style="margin-top: 0px; margin-left: 15px;" ng-if="activity.CanApprove">
+						<button class="btn btn-sm btn-primary btn-raised"
+							ng-click="Approve()" dlg-confirm dlg-confirm-header=""
+							dlg-confirm-txt="Deseja Aprovar esta solicitação de suporte?"
+							dlg-confirm-ok="Aprovar" dlg-confirm-cancel="Cancelar">Aprovar
+						</button>
+					</div>
+				</form>
+			</li>
+			<li class="change-status" ng-if="activity.activity_status.status != 'executando'">
+				<h4 class="estado-change" >
+					<span class="badge" ng-class="activity.activity_status.status">{{!activity.activity_status.status}}</span>
+					<div class="user-name">
+						{{!activity.activity_status.user.name}}
+						<small class="text-muted dates">{{!activity.activity_status.date | date : 'yyyy/MM/dd HH:mm'}}</small>
+					</div>
+					<small class="text-muted">{{!activity.activity_status.user.email}} ({{!activity.activity_status.user.organization}})</small>
+				</h4>
+			</li>
+
+			<br/>
+			<li class="fase-phase" ng-class="fase.phase" ng-repeat="(key, fase) in timeline | orderBy:post.date:true">
+				<div class="posts" uib-collapse="isCollapsed">
+					<div ng-repeat="(key, post) in fase.posts | orderBy:post.date:true track by $index "
+							ng-class="{'myself': post.user.email == user.email}" class="post">
+						<div class="div-post">
+							<div ng-if="post.thumbnail && post.thumbnail.type == 'media'" ng-click="ShowCarousel(post.attachment);">
+								<img class="img" ng-src="{{!post.thumbnail.src}}">
+							</div>
+							<div ng-if="post.thumbnail && post.thumbnail.type == 'msoffice'">
+								<a ng-href="{{!post.attachment.file.url}}" download="{{!post.attachment.filename}}">
+									<img class="img" ng-src="{{!post.thumbnail.src}}">
+								</a>
+							</div>
+							<div ng-if="post.thumbnail && post.thumbnail.type == 'pdf'" class="div-attach-icon">
+								<a ng-href="{{!post.attachment.file.url}}" download="{{!post.attachment.filename}}" target="_blank"
+									class="custom-icon" ng-class="post.thumbnail.extension">
+									<img class="img" ng-src="{{!post.thumbnail.src}}">
+								</a>
+							</div>
+							<div ng-if="post.thumbnail && !post.thumbnail.src && post.thumbnail.type == 'text'" class="div-attach-icon">
+								<a ng-href="{{!post.attachment.file.url}}" download="{{!post.attachment.filename}}" target="_blank"
+									class="custom-icon" ng-class="post.thumbnail.extension">
+									<i class="text-icon"></i>
+									<small>{{!post.thumbnail.extension}}</small>
+								</a>
+							</div>
+							<div ng-if="post.thumbnail && !post.thumbnail.src && post.thumbnail.type == ''" class="div-attach-icon-1">
+								<a href="{{!post.attachment.url}}" download="{{!post.attachment.name}}"
+									class="custom-icon" ng-class="post.thumbnail.extension">
+									<i class="icon-big material-icons">insert_drive_file</i>
+									<small>{{!post.thumbnail.extension}}</small>
+								</a>
+							</div>
+							<p class="ppost" ng-bind="post.comment" linkify></p>
+							<h4>
+								<div class="user-name">{{!post.user.name}}
+									<small class="text-muted dates">{{!post.date | date : 'yyyy/MM/dd HH:mm'}} <span ng-if="post.edited">(editado)</span></small>
+								</div>
+								<div>
+									<small class="text-muted">{{! post.user.email}} ({{! post.user.organization}})</small>
+								</div>
+							</h4>
+						</div>
+					</div>
+				</div>
+				<h4 class="fase-change" ng-class="{'myself': fase.user.email == user.email}">
+					<div class="posts" uib-collapse="isCollapsed">
+						<div class="post" ng-if="_.isEmpty(fase.posts)">
+							<div class="d-post">
+								<p class="p-post" ng-class="{'myself': fase.user.email == user.email}">{{!fase.post}}</p>
+								<div class="user-name" ng-class="{'myself': fase.user.email == user.email}">
+									{{!fase.user.name}}
+									<small class="text-muted dates">{{! fase.date | date : 'yyyy/MM/dd HH:mm'}}</small>
+								</div>
+								<div class="user-email" ng-class="{'myself': fase.user.email == user.email}">
+									<small class="text-muted">{{! fase.user.email}} ({{! fase.user.organization}})</small>
+								</div>
+							</div>
+						</div>
+					</div>
+					<span class="badge fase-btn" ng-class="fase.phase" ng-click="isCollapsed = !isCollapsed">{{!status_phases[fase.phase]['label']}}</span>
+				</h4>
+			</li>
+		</ul>
+	</div>
+</div>
+
+<div name="Carousel" class="carousel-media" ng-controller="CarouselCtrl">
+	<div ng-show="views.option == 'carousel'">
+		<div class="modal-header" ng-show="title">
+			<h3 class="modal-title">
+				{{!title}}
+				<span class="username">
+					<span class="filename">"{{!selected_media.attachment.filename}}"</span>, postado por
+					<span class="name">{{!selected_media.user.name}}</span>&ensp; em &ensp;
+					<span class="date">{{!selected_media.date | date:'yyyy-MM-dd HH:mm:ss'}}</span>
+				</span>
+				<button type="button" class="close pull-right" ng-click="Close()">&times;</button>
+				<a href="{{!selected_media.attachment.file.url}}" class="btn btn-icon download pull-right"
+					download="{{!selected_media.attachment.filename}}" target="_blank">
+					<strong class="sr-only">Salvar</strong>
+					<i class="material-icons">file_download</i>
+				</a>
+			</h3>
+		</div>
+		<div class="modal-body" ng-show="medias">
+			<div uib-carousel active="active" no-transition="true" interval="0" no-wrap="true">
+				<div uib-slide ng-repeat="(index, media) in medias track by media.index" index="media.index">
+					<audio ng-if="media.thumbnail.subtype=='audio'" class="audio" controls ng-src="{{!media.attachment.file.url}}"
+						id="{{! 'audio_' + media.index}}">
+					</audio>
+					<span class="centered"></span>
+					<img ng-if="media.thumbnail.subtype=='image'" class="image" ng-src="{{!media.attachment.file.url}}"
+						id="{{! 'img_' + media.index}}" ng-click="ShowZoom(media.attachment.file.url)">
+					<video ng-if="media.thumbnail.subtype=='video'" class="video" controls ng-src="{{!media.attachment.file.url}}"
+						id="{{! 'video_' + media.index}}">
+					</video>
+				</div>
+			</div>
+			<div class="thumbnails">
+				<div class="inner-flex">
+					<div ng-repeat="media in medias track by media.index" class="div-repeat">
+						<img ng-src="{{!media.thumbnail.src}}" ng-click="SetActive(media)">
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div id="zoom_view" ng-show="views.option == 'panzoom'" class="zoom-view">
+		<panzoomwidget panzoom-id="PanZoom" class="panzoom-control"></panzoomwidget>
+		<div class="zoom-close">
+			<button type="button" class="close pull-right" ng-click="CloseZoom()">&times;</button>
+		</div>
+		<panzoom id="PanZoom" config="panzoom.Config" model="panzoom.Model">
+			<img ng-src="{{!panzoom.Model.photo || '//:0' }}" class="position-absolute"/>
+		</panzoom>
+	</div>
+</div>

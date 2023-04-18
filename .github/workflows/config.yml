@@ -1,0 +1,118 @@
+# Copyright(C) Venidera Research & Development, Inc - All Rights Reserved
+# Unauthorized copying of this file, via any medium is strictly prohibited
+# Proprietary and confidential
+# Written by Venidera Development Team <suporte@venidera.com>
+
+# A workflow for building, testing and deploying applications
+name: CI
+
+on:
+  # Trigger the workflow on push
+  push:
+    # Push events on branches develop, release and master
+    branches: [develop, release, master]
+    # Anytime a path name matches, the workflow will not run
+    paths-ignore: ['README.md']
+  # Trigger the workflow on pull request
+  pull_request:
+    # Pull request events on branches develop, release and master
+    branches: [develop, release, master]
+    # Anytime a path name matches, the workflow will not run
+    paths-ignore: ['README.md']
+
+# Typed pipeline variables declared at the top level of a configuration.
+# Users can pass parameters into their pipelines when triggering a new run.
+env:
+  IMAGE_NAME: venideraco/prox-suporte
+  APP_NAME: prox_suporte
+
+# The basic units of work in a run
+jobs:
+  deploy:
+    # Job name
+    name: Deploying
+    # Primary machine where all commands run
+    runs-on: ubuntu-latest
+    steps:
+      # Used to check out source code to the configured path
+      - name: Check out source repository
+        uses: actions/checkout@v2
+        with:
+          path: code
+      # Logging in to DockerHub
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_PASSWORD }}
+      # Setting environment variables
+      - name: Set environment variables
+        env:
+          ACTIONS_ALLOW_UNSECURE_COMMANDS: 'true'
+        run: |
+          echo "::set-env name=API_PORT::${GITHUB_REF##*/}_API_PORT"
+          echo "::set-env name=ROOT_DOMAIN::${GITHUB_REF##*/}_ROOT_DOMAIN"
+          echo "::set-env name=MONGODB_URI::${GITHUB_REF##*/}_MONGODB_URI"
+          if [[ "${GITHUB_REF##*/}" == "develop" ]]; then
+            echo "::set-env name=IMAGE_TAG::${GITHUB_REF##*/}"
+          else
+            echo "::set-env name=IMAGE_TAG::${GITHUB_REF##*/}_$(echo $GITHUB_SHA | head -c7)"
+          fi
+      # Building the Docker image
+      - name: Build the Docker image
+        run: |
+          cd code
+          docker build \
+            --build-arg=API_PORT=${{ secrets[env.API_PORT] }} \
+            --build-arg=ROOT_DOMAIN=${{ secrets[env.ROOT_DOMAIN] }} \
+            --build-arg=COOKIE_SECRET=${{ secrets.COOKIE_SECRET }} \
+            --build-arg=MONGODB_URI='${{ secrets[env.MONGODB_URI] }}' \
+            --build-arg=CROSS_KEY=${{ secrets.CROSS_KEY }} \
+            --build-arg=GITHUB_BRANCH=${GITHUB_REF##*/} \
+            --build-arg=GITHUB_ACCESS_TOKEN=${{ secrets.ACCESS_TOKEN }} \
+            --build-arg=TRELLOAPIKEY=${{ secrets.TRELLOAPIKEY }} \
+            --build-arg=TRELLOAPITOKEN=${{ secrets.TRELLOAPITOKEN }} \
+            --build-arg=TRELLOAPISECRET=${{ secrets.TRELLOAPISECRET }} \
+            --build-arg=TRELLOMANAGER=${{ secrets.TRELLOMANAGER }} \
+            --build-arg=TRELLOCALLBACK=${{ secrets.TRELLOCALLBACK }} \
+            --tag ${IMAGE_NAME}:${IMAGE_TAG} .
+      # Publishing image to DockerHub
+      - name: Publish the Docker image into DockerHub
+        run: |
+          cd code
+          docker push $IMAGE_NAME:$IMAGE_TAG
+      # Checkout venidera-k8s
+      - name: Checkout venidera-k8s source code
+        if: "!contains(github.ref,'develop')"
+        uses: actions/checkout@v2
+        with:
+          repository: 'venidera/venidera-k8s'
+          ref: ${{ github.ref }}
+          path: venidera-k8s
+          token: ${{ secrets.PERSONAL_TOKEN }}
+      # Update image
+      - name: Update image
+        if: "!contains(github.ref,'develop')"
+        run: |
+          cd venidera-k8s/apps/$APP_NAME
+          kustomize edit set image $IMAGE_NAME:$IMAGE_TAG
+      # Commit kustomization
+      - name: Commit kustomization
+        if: "!contains(github.ref,'develop')"
+        run: |
+          cd venidera-k8s
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git commit -a -m "$IMAGE_NAME:$IMAGE_TAG" || true
+      # Push kustomization
+      - name: Push kustomization
+        if: "!contains(github.ref,'develop')"
+        run: |
+          cd venidera-k8s
+          typeset -i i END
+          let END=5 i=1
+          while ((i<=END)) && ! git push
+          do
+            git pull --no-edit --no-rebase
+            let i++
+          done

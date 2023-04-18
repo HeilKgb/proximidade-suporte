@@ -1,0 +1,82 @@
+<div class="edit-life-track">
+	<form name="ctrlEdit.form" ng-submit="Submit(ctrlEdit.form)">
+		<div class="modal-header" ng-show="title">
+			<button type="button" class="close" ng-click="Cancel()">
+				<i class="material-icons">close</i>
+			</button>
+			<h3 class="modal-title" ng-bind-html="title"></h3>
+		</div>
+		<div class="modal-body">
+			<div class="form-inline-group title"
+				ng-class="{
+					'is-focused':focus===true,
+					'has-success': ctrlEdit.form.title.$valid,
+					'has-error': ctrlEdit.form.title.$invalid}">
+				<label for="title" class="control-label">Título</label>
+				<input type="text" name="title" class="form-control"
+					data-lpignore="true" id="title" ng-model="activity.title" required>
+			</div>
+			<div class="form-inline-group description"
+				ng-class="{
+					'is-focused':focus===true,
+					'has-success': ctrlEdit.form.description.$valid,
+					'has-error': ctrlEdit.form.description.$invalid}">
+				<label for="description" class="control-label">Descrição:</label>
+				<textarea class="form-control text-justify" name="description" rows="1" auto-resize required maxlength="1024"
+					ng-model="activity.description" placeholder="Digite uma descrição para esta atividade.">
+				</textarea>
+			</div>
+			<div class="form-inline-group select-module_names"
+				ng-class="{
+					'is-focused':focus===true,
+					'has-success': ctrlEdit.form.module_names.$valid,
+					'has-error': ctrlEdit.form.module_names.$invalid}">
+				<label for="module_names" class="control-label">Nome do Aplicativo</label>
+				<input type="text" name="module_names" class="form-control select-module_names-input"
+					data-lpignore="true" ng-model="activity.module.name"
+					validation-error="ctrlEdit.form.module_names.$invalid ? 'Por favor, selecione o aplicativo' : ''"/>
+				<ui-select ng-model="activity.module" theme="bootstrap"
+					close-on-select="true" reset-search-input="true"
+					name="module_names" ng-required="true">
+					<ui-select-match placeholder="Selecione um Aplicativo">
+						<span ng-bind="$select.selected.name"></span>
+					</ui-select-match>
+					<ui-select-choices repeat="module in (config.modules | filter: $select.search | orderBy)">
+						<div ng-bind-html="module.name | highlight: $select.search"></div>
+					</ui-select-choices>
+				</ui-select>
+			</div>
+
+			<div class="form-inline-group select-organizations"
+				ng-class="{
+					'is-focused':focus===true,
+					'has-success': ctrlEdit.form.organizations.$valid,
+					'has-error': ctrlEdit.form.organizations.$invalid}">
+				<label for="organizations" class="control-label">Organizações</label>
+				<input type="text" name="organizations" class="form-control select-organizations-input"
+					data-lpignore="true" ng-model="activity.organizations[0]"
+					validation-error="ctrlEdit.form.organizations.$invalid ? 'Por favor, selecione uma organização' : ''"/>
+				<ui-select multiple name="organizations" ng-required="true"
+					on-select="OnSelect($item, $model)"
+					ng-model="activity.organizations" theme="bootstrap">
+					<ui-select-match placeholder="Selecione as organizações ...">
+						{{!$item.nickname}}
+					</ui-select-match>
+					<ui-select-choices repeat="org.nickname as org in (organizations | filter: {nickname: $select.search}) track by $index">
+						<div ng-bind-html="org.nickname | highlight: $select.search"></div>
+						<small ng-bind-html="org.name | highlight: $select.search"></small>
+					</ui-select-choices>
+				</ui-select>
+			</div>
+		</div>
+		<div class="modal-footer">
+			<button ng-disabled="!ctrlEdit.form.modified"
+				class="btn btn-default" ng-click="Reset(ctrlEdit.form)">Resetar</button>
+			<button ng-disabled="!ctrlEdit.form.modified"
+				type="submit" class="btn btn-primary">Salvar</button>
+			<span ng-if="dataloading" class="text-right text-danger span-preloader">
+				<img src="/static/images/preloader.gif" class="preloader" />Salvando&hellip;
+			</span>
+		</div>
+	</form>
+</div>
