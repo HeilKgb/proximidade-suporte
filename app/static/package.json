@@ -1,16 +1,16 @@
 {
-  "name": "prox-suporte",
+  "name": "proximidade_prox",
   "version": "1.0.0",
   "description": "components package of prox suporte",
   "main": "app.js",
-  "repository": "https://github.com/venidera/prox-suporte",
-  "author": "Makoto Kadowaki",
+  "repository": "https://github.com/HeilKgb/proximidade-suporte",
+  "author": "Vanessa Sena",
   "license": "MIT",
   "private": true,
   "keywords": [
     "suporte",
-    "prox-suporte-lt",
-    "prox-suporte"
+    "proximidade-suporte-lt",
+    "proximidade-suporte"
   ],
   "directories": {
     "lib": "lib"

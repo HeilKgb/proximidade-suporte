@@ -13,8 +13,8 @@ from secrets import token_hex
 from apscheduler.schedulers.tornado import TornadoScheduler
 from tornado.gen import engine
 
-from vmail import sender
-from vsupport.vtrello import VTrello
+from handlers.vmail import sender
+from suporte import VTrello
 from lib.webhook_scheduling import WebHooks
 
 info('Setting timezone to UTC')
@@ -64,7 +64,7 @@ config['max_days_valid'] = 5  # Days to a token or cookie to be valid
 
 # Redis config
 config['redisdb_uri'] = os.environ.get(
-    'REDISDB_URI', "redis://prox_suporte_redis:6379")
+    'REDISDB_URI', "redis://proximidade_suporte_redis:6379")
 
 # URL config
 config['APP_PROTOCOL'] = os.environ.get('APP_PROTOCOL', 'https')
@@ -85,17 +85,17 @@ config['API_URL'] = os.environ.get(
         config['APP_PROTOCOL'], config['ROOT_DOMAIN']))
 
 config['FILEMANAGER_URI'] = os.environ.get(
-    'FILEMANAGER_URI', 'prox_suporte_filemanager:18500')
+    'FILEMANAGER_URI', 'proximidade_suporte_filemanager:18500')
 
 config['FILES'] = 'http://%s' % (config['FILEMANAGER_URI'])
 
 config['SERVICE_NAME'] = 'suporte'
 
 # Support email
-config['PROX_SUPORTE_EMAIL_FROM'] = os.environ.get(
-    'PROX_SUPORTE_EMAIL_FROM', 'suporte.prox@venidera.com')
-config['PROX_SUPORTE_EMAIL_TO'] = os.environ.get(
-    'PROX_SUPORTE_EMAIL_TO', 'suporte.prox@venidera.com')
+config['PROXIMIDADE_SUPORTE_EMAIL_FROM'] = os.environ.get(
+    'PROXIMIDADE_SUPORTE_EMAIL_FROM', 'suporte.prox@venidera.com')
+config['PROXIMIDADE_SUPORTE_EMAIL_TO'] = os.environ.get(
+    'PROXIMIDADE_SUPORTE_EMAIL_TO', 'suporte.prox@venidera.com')
 
 config['login_url'] = (
     config['AUTHCENTER'] + '/#/login?continue=' + config['APPURL'])

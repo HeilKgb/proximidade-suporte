@@ -72,9 +72,9 @@ RUN apt-get -y update --fix-missing && \
     apt-get -y autoremove && \
     apt-get -y autoclean
 # Copying local repository
-COPY . /prox-suporte
+COPY . /proximidade-suporte
 # Updating pip and installing public dependencies
-RUN pip install --upgrade -r /prox-suporte/requirements.txt \
+RUN pip install --upgrade -r /proximidade-suporte/requirements.txt \
     pip \
     setuptools==58.4.0 \
     wheel \
@@ -95,13 +95,13 @@ RUN pip uninstall -y pymongo && pip uninstall -y bson && pip install pymongo==3.
     # Installing yarn
     npm install -g yarn && \
     # Checking if bower is used
-    if [ -d "/prox-suporte/app/static" ]; then \
+    if [ -d "/proximidade-suporte/app/static" ]; then \
     # Chdir to static folder and installing all deps
-    cd /prox-suporte/app/static && \
+    cd /proximidade-suporte/app/static && \
     yarn install; fi
 # Exposing port
 EXPOSE ${API_PORT}
 # Creating working directory
-WORKDIR /prox-suporte
+WORKDIR /proximidade-suporte
 # Running execution command
-CMD ["/bin/bash", "-c", "python /prox-suporte/app/suporte.py --port=${API_PORT}"]
+CMD ["/bin/bash", "-c", "python /proximidade-suporte/app/suporte.py --port=${API_PORT}"]

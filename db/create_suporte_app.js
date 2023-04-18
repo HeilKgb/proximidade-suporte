@@ -1,3 +1,0 @@
-use 
-
-db.applications.insert({"_id" : ObjectId("616767530cfc2209103df5f6"), "name" : "PROX Suporte", "description" : "Aplicativo de suporte do PROX", "info" : { "alias" : "suporte-prox", "icon" : "/static/images/icon_suporte.png", "url" : "https://suporte.prox.seg.br", "required" : false, "default" : true, "restriction" : [ ], "manager" : { "id" : "509aa706c3f9df790a008465", "email" : "vanessa.sena@venidera.com", "fullName" : "vanessasena", "username" : "vanessasena" } }, "updated_at" : ISODate("2021-10-15T21:31:05.787Z"), "created_at" : ISODate("2021-10-13T23:10:11.236Z") })

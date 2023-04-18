@@ -1,11 +1,11 @@
 {
-  "name": "prox-suporte",
+  "name": "proximidade-suporte",
   "authors": ["Makoto Kadowaki <makoto@venidera.com>"],
   "description": "Suporte Prox",
   "main": "app",
-  "keywords": ["suporte", "prox-suporte-lt", "prox-suporte"],
+  "keywords": ["suporte", "proximidade-suporte-lt", "proximidade-suporte"],
   "license": "MIT",
-  "homepage": "https://github.com/venidera/prox-suporte",
+  "homepage": "https://github.com/HeilKgb/proximidade-suporte",
   "private": true,
   "ignore": ["**/.*", "node_modules", "bower_components", "test", "tests"],
   "dependencies": {

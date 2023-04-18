@@ -164,7 +164,7 @@
 									<span class="dropup"><b class="caret" ng-if="!orderby.reverse"></b></span>
 								</span>
 							</th>
-							<th class="organizations text-center" ng-if="lt.org=='Prox_suporte'">
+							<th class="organizations text-center" ng-if="lt.org=='Proximidade_suporte'">
 								<a ng-click="order('organizations')" ng-class="{active:orderby.predicate === 'organizations'}">Visível para:</a>
 								<span ng-show="orderby.predicate === 'organizations'">
 									<b class="caret" ng-if="orderby.reverse"></b>
@@ -201,7 +201,7 @@
 							<td class="text-center">{{!activity.module.name}}</td>
 							<td class="text-center">{{!activity.description}}</td>
 							<td class="text-center">{{!types_by_name[activity.activity_type]}}</td>
-							<td class="text-center" ng-if="lt.org=='Prox_suporte'">
+							<td class="text-center" ng-if="lt.org=='Proximidade_suporte'">
 								{{! activity.organizations | parseArray }}
 							</td>
 							<td class="text-center">{{!activity.created_at}}</td>

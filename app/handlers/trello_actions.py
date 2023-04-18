@@ -2,7 +2,7 @@ import logging
 import os
 from tornado.gen import engine, Task
 from handlers.api_trello import TrelloApiHandler
-from vmail import sender
+from handlers.vmail import sender
 from string import Template
 from copy import deepcopy
 from dateutil import parser
@@ -15,7 +15,6 @@ from data_models import Activity
 
 class TrelloActionsHandler(TrelloApiHandler):
     """ Handler to Activities resources """
-
 
     @engine
     def trello_actions(self):
@@ -31,9 +30,9 @@ class TrelloActionsHandler(TrelloApiHandler):
             resp, store_msg = yield Task(self.__update_comment_action_for_activity)
         elif (type == 'deleteComment'):
             resp, store_msg = yield Task(self.__delete_comment_action_for_activity)
-        elif( type == 'updateCheckItem'):
+        elif (type == 'updateCheckItem'):
             resp, store_msg = yield Task(self.__update_checkitem_action, status=False)
-        elif( type == 'updateCheckItemStateOnCard'):
+        elif (type == 'updateCheckItemStateOnCard'):
             resp, store_msg = yield Task(self.__update_checkitem_action, status=True)
         """
         elif type == 'deleteCard':
@@ -58,13 +57,13 @@ class TrelloActionsHandler(TrelloApiHandler):
                 if checkItem['state'] == 'complete':
                     """ check item checked, post message """
                     resp = yield Task(self.__post_automated_messages,
-                        trello_data=self.input_data,
-                        item_name=checkItem['name'])
+                                      trello_data=self.input_data,
+                                      item_name=checkItem['name'])
                 else:
                     """ check item unchecked, remove message """
                     card_id = self.input_data['model']['id']
                     resp = yield Task(self.__remove_automated_message,
-                        card_id=card_id)
+                                      card_id=card_id)
                     logging.info('Nada a fazer. Check desmarcado.')
             else:
                 logging.info('Sem Checklist.')
@@ -86,42 +85,48 @@ class TrelloActionsHandler(TrelloApiHandler):
         config = yield self.TrelloConfig.find_one({'version': self.trello['version']})
         if item_name in config['automatic_posts']:
             """ card id """
-            card_id=trello_data['model']['id']
+            card_id = trello_data['model']['id']
             input_data = deepcopy(self.input_data)
 
             if config['version'] < "1.2":
                 if 'action' in config['automatic_posts'][item_name] and\
-                    config['automatic_posts'][item_name]['action'] == 'finalizar':
+                        config['automatic_posts'][item_name]['action'] == 'finalizar':
                     store = resp[1]
                     if isinstance(store, str):
                         store = loads(store)
                     resp = yield Task(self.__run_action_to_finish, card_id=card_id,
-                        input_data=input_data, store=store)
+                                      input_data=input_data, store=store)
 
                 elif 'message' in config['automatic_posts'][item_name]:
                     message_text = config['automatic_posts'][item_name]['message']
                     if 'params' in config['automatic_posts'][item_name]:
                         """ replace %s with data (email/date) """
                         if config['automatic_posts'][item_name]['params'] == 'due_date':
-                            due_date = parser.parse(trello_data['model']['due']).strftime('%d/%m/%Y')
+                            due_date = parser.parse(
+                                trello_data['model']['due']).strftime('%d/%m/%Y')
                             message_text = message_text % (due_date)
                         elif config['automatic_posts'][item_name]['params'] == 'suporte_email':
-                            message_text = message_text % ('suporte_prox@venidera.com')
+                            message_text = message_text % (
+                                'suporte_prox@venidera.com')
                     resp = yield Task(self.__publish_message, card_id=card_id,
-                        comment=message_text, input_data=input_data)
+                                      comment=message_text, input_data=input_data)
                     if not resp[0]:
                         """ Se errro, enviar mensagem para suporte """
-                        message = 'modelo: ' + trello_data['model']['name'] + '.\n mensagem: '+ message_text
+                        message = 'modelo: ' + \
+                            trello_data['model']['name'] + \
+                            '.\n mensagem: ' + message_text
                         template = Template(open(
                             './app/templates/email/system_error.html', 'r').read())
                         user = yield self.Users.find_one({'email': 'vanessa.sena@venidera.com'})
                         emailTo = config['notification_emails'].copy()
-                        emailTo.append({'email': user['email'], 'fullname': user['fullname']})
-                        fromaddr=self.settings['PROX_SUPORTE_EMAIL_FROM']
+                        emailTo.append(
+                            {'email': user['email'], 'fullname': user['fullname']})
+                        fromaddr = self.settings['PROXIMIDADE_SUPORTE_EMAIL_FROM']
 
                         # Send Error Message
                         for user in emailTo:
-                            body = template.substitute(nome=user['fullname'], message=message)
+                            body = template.substitute(
+                                nome=user['fullname'], message=message)
                             logging.info(body)
                             sender.send_email(
                                 toaddr=user['email'], fromaddr=fromaddr,
@@ -129,12 +134,12 @@ class TrelloActionsHandler(TrelloApiHandler):
                                 message=body, is_html=True)
             else:
                 if 'action' in config['automatic_posts'][item_name] and\
-                    config['automatic_posts'][item_name]['action'] == 'finalizar':
+                        config['automatic_posts'][item_name]['action'] == 'finalizar':
                     store = resp[1]
                     if isinstance(store, str):
                         store = loads(store)
                     resp, store = yield Task(self.__run_action_to_finish, card_id=card_id,
-                        input_data=input_data, store=store)
+                                             input_data=input_data, store=store)
                     if resp:
                         self.trello['store'].submit(store)
 
@@ -143,25 +148,31 @@ class TrelloActionsHandler(TrelloApiHandler):
                     if 'params' in config['automatic_posts'][item_name]:
                         """ replace %s with data (email/date) """
                         if config['automatic_posts'][item_name]['params'] == 'due_date':
-                            due_date = parser.parse(trello_data['model']['due']).strftime('%d/%m/%Y')
+                            due_date = parser.parse(
+                                trello_data['model']['due']).strftime('%d/%m/%Y')
                             message_text = message_text % (due_date)
                         elif config['automatic_posts'][item_name]['params'] == 'suporte_email':
-                            message_text = message_text % ('suporte_prox@venidera.com')
+                            message_text = message_text % (
+                                'suporte_prox@venidera.com')
                     resp = yield Task(self.__publish_message, card_id=card_id,
-                        comment=message_text, input_data=input_data)
+                                      comment=message_text, input_data=input_data)
                     if not resp[0]:
                         """ Se errro, enviar mensagem para suporte """
-                        message = 'modelo: ' + trello_data['model']['name'] + '.\n mensagem: '+ message_text
+                        message = 'modelo: ' + \
+                            trello_data['model']['name'] + \
+                            '.\n mensagem: ' + message_text
                         template = Template(open(
                             './app/templates/email/system_error.html', 'r').read())
                         user = yield self.Users.find_one({'email': 'vanessa.sena@venidera.com'})
                         emailTo = config['notification_emails'].copy()
-                        emailTo.append({'email': user['email'], 'fullname': user['fullname']})
-                        fromaddr=self.settings['PROX_SUPORTE_EMAIL_FROM']
+                        emailTo.append(
+                            {'email': user['email'], 'fullname': user['fullname']})
+                        fromaddr = self.settings['PROXIMIDADE_SUPORTE_EMAIL_FROM']
 
                         # Send Error Message
                         for user in emailTo:
-                            body = template.substitute(nome=user['fullname'], message=message)
+                            body = template.substitute(
+                                nome=user['fullname'], message=message)
                             logging.info(body)
                             sender.send_email(
                                 toaddr=user['email'], fromaddr=fromaddr,
@@ -175,10 +186,9 @@ class TrelloActionsHandler(TrelloApiHandler):
                     })
         callback(resp)
 
-
     @engine
     def __run_action_to_finish(self, card_id=None, input_data=None,
-        store=None, callback=None):
+                               store=None, callback=None):
         """ Updating Activity Status to Finalizado """
 
         resp = False, store
@@ -192,9 +202,10 @@ class TrelloActionsHandler(TrelloApiHandler):
         if activity:
             """ get the user who commented on trello """
             trello_user = yield Task(self.get_trello_user,
-                input_data['action']['memberCreator'])
+                                     input_data['action']['memberCreator'])
 
-            llist = [l for l in self.trello['card_lists'] if l['name'] == 'Finalizados']
+            llist = [l for l in self.trello['card_lists']
+                     if l['name'] == 'Finalizados']
             if len(llist):
                 llist = llist[0]
                 card = self.trello['api'].put(
@@ -212,15 +223,14 @@ class TrelloActionsHandler(TrelloApiHandler):
                     if webhook and 'id' in webhook:
                         rundate = datetime.now() + relativedelta(minutes=1)
                         # rundate = datetime.now() + relativedelta(seconds=10)
-                        logging.info('%s: programando para excluir at %s %s', datetime.now(), rundate, card_id)
+                        logging.info(
+                            '%s: programando para excluir at %s %s', datetime.now(), rundate, card_id)
                         # self.scheduler.add_job(
                         #     TrelloApiHandler.schedule_delete_webhook, 'date', run_date=rundate,
                         #     args=(self, webhook['id']), id='process_data')
                         self.scheduler.add_job(
                             TrelloApiHandler.schedule_delete_webhook, 'date', run_date=rundate,
-                                args=(self, webhook['id']), id='process_data')
-
-
+                            args=(self, webhook['id']), id='process_data')
 
             self.input_data = {
                 'activity_status': {
@@ -234,7 +244,8 @@ class TrelloActionsHandler(TrelloApiHandler):
             response = yield Task(
                 self.update_object, objmodel=Activity, oids=oid)
 
-            activity_status = self.datetime_to_isoformat(self.input_data['activity_status'])
+            activity_status = self.datetime_to_isoformat(
+                self.input_data['activity_status'])
 
             store = {
                 'tipo': 'run_action_to_finish',
@@ -248,7 +259,7 @@ class TrelloActionsHandler(TrelloApiHandler):
 
     @engine
     def __publish_message(self, card_id=None, comment=None,
-        input_data=None, callback=None):
+                          input_data=None, callback=None):
         """ Adding Message to Suporte """
 
         resp = False, {}
@@ -270,7 +281,7 @@ class TrelloActionsHandler(TrelloApiHandler):
 
             # """ get the user who commented on trello """
             trello_user = yield Task(self.get_trello_user,
-                input_data['action']['memberCreator'])
+                                     input_data['action']['memberCreator'])
 
             """ create a post and append in the timeline"""
             post = {
@@ -303,7 +314,7 @@ class TrelloActionsHandler(TrelloApiHandler):
             if ((os.environ.get('GITHUB_BRANCH', 'develop') == 'master') or
                 (os.environ.get('GITHUB_BRANCH', 'develop') in ['develop', 'release']
                     and '@venidera.com' in activity['created_by'])):
-                fromaddr=self.settings['PROX_SUPORTE_EMAIL_FROM']
+                fromaddr = self.settings['PROXIMIDADE_SUPORTE_EMAIL_FROM']
                 template = Template(open(
                     './app/templates/email/customer_notice.html', 'r').read())
                 user = yield self.Users.find_one({'email': activity['created_by']})
@@ -316,15 +327,15 @@ class TrelloActionsHandler(TrelloApiHandler):
                         card_title=activity['title'], message=comment)
                     logging.info(body)
                     sender.send_email(toaddr=user['email'], fromaddr=fromaddr,
-                        subject=activity['title'], message=body, is_html=True)
+                                      subject=activity['title'], message=body, is_html=True)
             else:
                 logging.info('não enviando email: %s' % activity['created_by'])
 
-            store_dump = {'tipo': 'addComment', 'id': oid, 'timeline_id': id, 'data': post}
+            store_dump = {'tipo': 'addComment', 'id': oid,
+                          'timeline_id': id, 'data': post}
             resp = True, dumps(store_dump)
 
         callback(resp)
-
 
     @engine
     def __remove_automated_message(self, card_id=None, callback=None):
@@ -348,8 +359,8 @@ class TrelloActionsHandler(TrelloApiHandler):
             action_id = self.input_data['action']['data']['checkItem']['id']
 
             ppost = [(id, pid) for (id, tl) in enumerate(timeline) for
-                (pid, post) in enumerate(tl['posts'])
-                if 'action_id' in post and action_id in post['action_id']]
+                     (pid, post) in enumerate(tl['posts'])
+                     if 'action_id' in post and action_id in post['action_id']]
 
             if ppost:
                 """ Exist old action in atividade """
@@ -418,8 +429,8 @@ class TrelloActionsHandler(TrelloApiHandler):
             action_id = self.input_data['action']['data']['action']['id']
 
             ppost = [(id, pid) for (id, tl) in enumerate(timeline) for
-                (pid, post) in enumerate(tl['posts'])
-                if 'action_id' in post and action_id in post['action_id']]
+                     (pid, post) in enumerate(tl['posts'])
+                     if 'action_id' in post and action_id in post['action_id']]
 
             if ppost:
                 """ Exist old action in atividade """
@@ -459,7 +470,7 @@ class TrelloActionsHandler(TrelloApiHandler):
 
         """ get the user who commented on trello """
         trello_user = yield Task(self.get_trello_user,
-            self.input_data['action']['memberCreator'])
+                                 self.input_data['action']['memberCreator'])
 
         """ find activity by card id """
         activity = yield self.Activities.find_one(
@@ -483,8 +494,8 @@ class TrelloActionsHandler(TrelloApiHandler):
             action_id = self.input_data['action']['data']['action']['id']
 
             ppost = [(id, pid) for (id, tl) in enumerate(timeline) for
-                (pid, post) in enumerate(tl['posts'])
-                if 'action_id' in post and action_id in post['action_id']]
+                     (pid, post) in enumerate(tl['posts'])
+                     if 'action_id' in post and action_id in post['action_id']]
 
             store_msg = ''
             if ppost:
@@ -526,7 +537,7 @@ class TrelloActionsHandler(TrelloApiHandler):
             if ((os.environ.get('GITHUB_BRANCH', 'develop') == 'master') or
                 (os.environ.get('GITHUB_BRANCH', 'develop') in ['develop', 'release']
                     and '@venidera.com' in activity['created_by'])):
-                fromaddr=self.settings['PROX_SUPORTE_EMAIL_FROM']
+                fromaddr = self.settings['PROXIMIDADE_SUPORTE_EMAIL_FROM']
                 template = Template(open(
                     './app/templates/email/customer_notice.html', 'r').read())
                 user = yield self.Users.find_one({'email': activity['created_by']})
@@ -539,7 +550,7 @@ class TrelloActionsHandler(TrelloApiHandler):
                         card_title=activity['title'], message=comment)
                     logging.info(body)
                     sender.send_email(toaddr=user['email'], fromaddr=fromaddr,
-                        subject=activity['title'], message=body, is_html=True)
+                                      subject=activity['title'], message=body, is_html=True)
             else:
                 logging.info('não enviando email: %s' % activity['created_by'])
 
@@ -561,7 +572,7 @@ class TrelloActionsHandler(TrelloApiHandler):
 
         """ get the user who commented on trello """
         trello_user = yield Task(self.get_trello_user,
-            self.input_data['action']['memberCreator'])
+                                 self.input_data['action']['memberCreator'])
 
         """ find activity by card id """
         activity = yield self.Activities.find_one(
@@ -600,7 +611,7 @@ class TrelloActionsHandler(TrelloApiHandler):
             if ((os.environ.get('GITHUB_BRANCH', 'develop') == 'master') or
                 (os.environ.get('GITHUB_BRANCH', 'develop') in ['develop', 'release']
                     and '@venidera.com' in activity['created_by'])):
-                fromaddr=self.settings['PROX_SUPORTE_EMAIL_FROM']
+                fromaddr = self.settings['PROXIMIDADE_SUPORTE_EMAIL_FROM']
                 template = Template(open(
                     './app/templates/email/customer_notice.html', 'r').read())
                 user = yield self.Users.find_one({'email': activity['created_by']})
@@ -613,11 +624,12 @@ class TrelloActionsHandler(TrelloApiHandler):
                         card_title=activity['title'], message=comment)
                     logging.info(body)
                     sender.send_email(toaddr=user['email'], fromaddr=fromaddr,
-                        subject=activity['title'], message=body, is_html=True)
+                                      subject=activity['title'], message=body, is_html=True)
             else:
                 logging.info('não enviando email: %s' % activity['created_by'])
 
-            store_dump = {'tipo': 'addComment', 'id': oid, 'timeline_id': id, 'data': post}
+            store_dump = {'tipo': 'addComment', 'id': oid,
+                          'timeline_id': id, 'data': post}
             resp = True, dumps(store_dump)
 
         callback(resp)
@@ -660,17 +672,18 @@ class TrelloActionsHandler(TrelloApiHandler):
                         nested = 'checklists'
                         params = {}
                         checklists = yield Task(self.get_card, idCards=card_id,
-                            nested=nested, params=params)
+                                                nested=nested, params=params)
 
                         checklist = next((
                             cl for cl in checklists if
                             cl['name'] == lchecklist['name']), None)
 
                         if 'checkItems' in checklist:
-                            names = [f['name'] for f in checklist['checkItems']]
+                            names = [f['name']
+                                     for f in checklist['checkItems']]
                             checkItems = [item for item in
-                                lchecklist['checkitems'] if
-                                    item['name'] not in names]
+                                          lchecklist['checkitems'] if
+                                          item['name'] not in names]
 
                             for item in checkItems:
                                 params = {
@@ -682,8 +695,8 @@ class TrelloActionsHandler(TrelloApiHandler):
                                 """ Create a checklist in trello by params """
                                 nested = 'checkItems'
                                 checkitem = yield Task(self.create_checklist,
-                                    idChecklists= checklist['id'],
-                                    nested=nested, params=params)
+                                                       idChecklists=checklist['id'],
+                                                       nested=nested, params=params)
 
                     """ Update phase """
                     tl = max(activity['timeline'], key=itemgetter('index'))
@@ -692,7 +705,7 @@ class TrelloActionsHandler(TrelloApiHandler):
 
                         """ Return new phase data """
                         newphase = yield Task(self.get_new_phase, activity,
-                            newlist, self.input_data)
+                                              newlist, self.input_data)
                         activity['timeline'].append(newphase)
                         self.input_data = {'timeline': activity['timeline']}
 
@@ -731,7 +744,7 @@ class TrelloActionsHandler(TrelloApiHandler):
                         if ((os.environ.get('GITHUB_BRANCH', 'develop') == 'master') or
                             (os.environ.get('GITHUB_BRANCH', 'develop') in ['develop', 'release']
                                 and '@venidera.com' in activity['created_by'])):
-                            fromaddr=self.settings['PROX_SUPORTE_EMAIL_FROM']
+                            fromaddr = self.settings['PROXIMIDADE_SUPORTE_EMAIL_FROM']
                             template = Template(open(
                                 './app/templates/email/customer_notice.html', 'r').read())
                             user = yield self.Users.find_one({'email': activity['created_by']})
@@ -744,25 +757,30 @@ class TrelloActionsHandler(TrelloApiHandler):
                                     card_title=activity['title'], message=newlist['message'])
                                 logging.info(body)
                                 sender.send_email(toaddr=user['email'], fromaddr=fromaddr,
-                                    subject=activity['title'], message=body, is_html=True)
+                                                  subject=activity['title'], message=body, is_html=True)
                         else:
-                            logging.info('não enviando email: %s' % activity['created_by'])
+                            logging.info('não enviando email: %s' %
+                                         activity['created_by'])
 
-                        store_dump = {'tipo': 'updatePhase', 'id': oid, 'data': newphase}
+                        store_dump = {'tipo': 'updatePhase',
+                                      'id': oid, 'data': newphase}
                         if activity_status:
-                            store_dump['activity_status'] = self.datetime_to_isoformat(activity_status)
+                            store_dump['activity_status'] = self.datetime_to_isoformat(
+                                activity_status)
                         resp = True, dumps(store_dump)
             else:
                 """ Field updated """
                 self.input_data = self.get_updatable_fields()
-                updates = [(x, v) for x,v in self.input_data.items() if x in activity and activity[x] != v]
+                updates = [(x, v) for x, v in self.input_data.items()
+                           if x in activity and activity[x] != v]
 
                 if self.input_data and any(updates):
                     response = yield Task(
                         self.update_object, objmodel=Activity, oids=oid)
                     updates = self.datetime_to_isoformat(self.input_data)
 
-                    store_dump = {'tipo': 'updateFields', 'id': oid, 'data': updates}
+                    store_dump = {'tipo': 'updateFields',
+                                  'id': oid, 'data': updates}
                     resp = True, dumps(store_dump)
 
         callback(resp)

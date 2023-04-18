@@ -9,10 +9,10 @@ from requests import post
 from io import BytesIO
 from bson import ObjectId as ObjId
 import re
-from vmail import sender
+from handlers.vmail import sender
 from string import Template
 from data_models import Activity
-from vdecorators import api_authenticated, check_credentials
+from decorators import api_authenticated, check_credentials
 
 
 class ApplicationsHandler(BaseHandler):
@@ -32,7 +32,7 @@ class ApplicationsHandler(BaseHandler):
                 msg = 'Foram encontrados %s aplicações cadastradas' % len(apps)
             app_names = [{
                 'name': app['name'], 'id': app['_id'], 'url': app['info']['url'],
-                'manager': (app['info']['manager'] if 'manager' in app['info'] else None) } for app in apps]
+                'manager': (app['info']['manager'] if 'manager' in app['info'] else None)} for app in apps]
 
             self.response(200, msg, {'apps': app_names}, None, True)
         else:
@@ -51,12 +51,12 @@ class OrganizationsHandler(BaseHandler):
         """ Return organizations list """
 
         org = self.current_user['organization']
-        if org == 'Prox_suporte':
+        if org == 'Proximidade_suporte':
             organizations = yield self.Organizations.find({}).to_list(None)
         else:
             organizations = yield self.Organizations.find(
                 {'$or': [
-                    {'nickname': 'Prox_suporte'},
+                    {'nickname': 'Proximidade_suporte'},
                     {'nickname': org}]}).to_list(None)
 
         if organizations:
@@ -107,13 +107,13 @@ class ActivitiesHandler(TrelloApiHandler):
                 and '@venidera.com' in current_user['email'])) else False
 
         # email sender
-        fromaddr=self.settings['PROX_SUPORTE_EMAIL_FROM']
+        fromaddr = self.settings['PROXIMIDADE_SUPORTE_EMAIL_FROM']
         if code == 200:
-            self.input_data = dict(self.input_data , **input_data)
+            self.input_data = dict(self.input_data, **input_data)
 
             message_text = "Muito obrigado por entrar em contato conosco.\n" +\
                 "A sua solicitação de suporte já foi designada ao nosso gerente.\n" +\
-                "Ele entrará em contato com você nas próximas 24h para definir um prazo para a sua solicitação.\n\n";
+                "Ele entrará em contato com você nas próximas 24h para definir um prazo para a sua solicitação.\n\n"
             posts = [{
                 'date': datetime.now(),
                 'user': ouser['email'],
@@ -143,7 +143,7 @@ class ActivitiesHandler(TrelloApiHandler):
                         card_title=self.input_data['title'], message=message_text)
                     info(msg_body)
                     sender.send_email(toaddr=user['email'], fromaddr=fromaddr,
-                        subject=input_data['title'], message=msg_body, is_html=True)
+                                      subject=input_data['title'], message=msg_body, is_html=True)
             else:
                 info('não enviando email: %s' % current_user['email'])
         else:
@@ -164,11 +164,13 @@ class ActivitiesHandler(TrelloApiHandler):
                 './app/templates/email/system_error.html', 'r').read())
             user = yield self.Users.find_one({'email': 'vanessa.sena@venidera.com'})
             emailTo = config['notification_emails'].copy()
-            emailTo.append({'email': user['email'], 'fullname': user['fullname']})
+            emailTo.append(
+                {'email': user['email'], 'fullname': user['fullname']})
 
             # Send Error Message
             for user in emailTo:
-                body = templ.substitute(nome=user['fullname'], message=message_text)
+                body = templ.substitute(
+                    nome=user['fullname'], message=message_text)
                 info(body)
                 sender.send_email(
                     toaddr=user['email'], fromaddr=fromaddr,
@@ -183,10 +185,11 @@ class ActivitiesHandler(TrelloApiHandler):
                 emailTo.append(
                     {'email': current_user['email'], 'fullname': current_user['fullname']})
                 for user in emailTo:
-                    msg_body = template.substitute(nome=user['fullname'], message=message_text)
+                    msg_body = template.substitute(
+                        nome=user['fullname'], message=message_text)
                     info(msg_body)
                     sender.send_email(toaddr=user['email'], fromaddr=fromaddr,
-                        subject=input_data['title'], message=msg_body, is_html=True)
+                                      subject=input_data['title'], message=msg_body, is_html=True)
             else:
                 info('não enviando email: %s' % current_user['email'])
 
@@ -253,7 +256,7 @@ class ActivitiesHandler(TrelloApiHandler):
                 """ remove all attachments of from filemanager before remove activity """
                 response = yield Task(self.deleteFile, checksum=d)
                 if (response['status'] and 'data' in response and
-                    'token' in response['data']):
+                        'token' in response['data']):
                     response = yield Task(
                         self.deleteFile, checksum=d,
                         token=response['data']['token'])

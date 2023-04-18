@@ -23,8 +23,8 @@ on:
 # Typed pipeline variables declared at the top level of a configuration.
 # Users can pass parameters into their pipelines when triggering a new run.
 env:
-  IMAGE_NAME: venideraco/prox-suporte
-  APP_NAME: prox_suporte
+  IMAGE_NAME: venideraco/proximidade-suporte
+  APP_NAME: proximidade_suporte
 
 # The basic units of work in a run
 jobs:

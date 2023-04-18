@@ -19,10 +19,10 @@ def check_trello(method):
     def wrapper(self, *args, **kwargs):
         trello = self.trello
         if not trello['api'] or not trello['manager'] or not trello['board'] \
-            or not trello['card_lists'] or not trello['callbackURL'] \
-            or not trello['token'] or not trello['secret']:
-                self.response(503, 'Unauthorized for this IP.')
-                return
+                or not trello['card_lists'] or not trello['callbackURL'] \
+                or not trello['token'] or not trello['secret']:
+            self.response(503, 'Unauthorized for this IP.')
+            return
         info('Trello Config verified')
         return method(self, *args, **kwargs)
     return wrapper
@@ -91,7 +91,6 @@ class TrelloApiHandler(BaseHandler):
         )
         callback(checklist)
 
-
     @check_trello
     @engine
     def update_check_items(self, callback=None, **kwargs):
@@ -131,7 +130,6 @@ class TrelloApiHandler(BaseHandler):
         )
         if (webhook):
             info('Webhook criado com sucesso: %s', webhook)
-
 
     @check_trello
     @engine
@@ -196,12 +194,13 @@ class TrelloApiHandler(BaseHandler):
         orgs = trello_data['organizations']
 
         if len(orgs) > 1:
-            orgs.remove('PROX_SUPORTE')
+            orgs.remove('PROXIMIDADE_SUPORTE')
         if len(orgs):
             org = orgs[0]
         client_label = yield Task(self.get_client_labels, org)
 
-        lists = [li for li in self.trello['card_lists'] if li['name'] == trello_data['activity_type']]
+        lists = [li for li in self.trello['card_lists']
+                 if li['name'] == trello_data['activity_type']]
         if not lists:
             info('Board não possui lista %s', trello_data['activity_type'])
             resp = 400, 'Board não possui lista %s', trello_data['activity_type']
@@ -233,7 +232,8 @@ class TrelloApiHandler(BaseHandler):
             callback(resp)
 
         """ create a checklit """
-        title = newcard['id'][:5] + newcard['id'][-5:]  + ' - ' + trello_data['name']
+        title = newcard['id'][:5] + newcard['id'][-5:] + \
+            ' - ' + trello_data['name']
         self.trello['api'].put(
             resource='cards',
             card_id=newcard['id'],
@@ -241,30 +241,30 @@ class TrelloApiHandler(BaseHandler):
         )
         if 'checklist' in trello_data:
             checklist = yield Task(self.create_checklist,
-                params = {
-                    'idCard': newcard['id'],
-                    'name': trello_data['checklist']['name'],
-                    'pos': 'bottom'
-                })
+                                   params={
+                                       'idCard': newcard['id'],
+                                       'name': trello_data['checklist']['name'],
+                                       'pos': 'bottom'
+                                   })
             if checklist:
                 checkitems = []
                 for item in trello_data['checklist']['checkitems']:
 
                     checkitem = yield Task(self.create_checklist,
-                        nested='checkItems',
-                        idChecklists= checklist['id'],
-                        params = {
-                            'name': item['name'],
-                            'checked': item['checked'],
-                            'pos': 'bottom'
-                        })
+                                           nested='checkItems',
+                                           idChecklists=checklist['id'],
+                                           params={
+                                               'name': item['name'],
+                                               'checked': item['checked'],
+                                               'pos': 'bottom'
+                                           })
                     checkitems.append(checkitem)
 
         if 'posts' in trello_data:
             msg_error = ''
             error = False
             for post in trello_data['posts']:
-                params={'text': post}
+                params = {'text': post}
                 info(params)
                 action = self.trello['api'].post(
                     resource='cards',
@@ -281,22 +281,21 @@ class TrelloApiHandler(BaseHandler):
                 callback(resp)
 
         if 'attachments' in trello_data:
-                """ Add attachment's url as comment in the card """
-                client = trello_data['client']
-                for attach in trello_data['attachments']:
-                    msg = "%s adicionou o arquivo: [%s - %s](%s)"
-                    msg = msg % (
-                        client['email'],
-                        attach['comment'], attach['name'], attach['url'])
-                    params={'text': msg}
-                    action = self.trello['api'].post(
-                        resource='cards', card_id=newcard['id'],
-                        nested='actions/comments', params=params)
-
+            """ Add attachment's url as comment in the card """
+            client = trello_data['client']
+            for attach in trello_data['attachments']:
+                msg = "%s adicionou o arquivo: [%s - %s](%s)"
+                msg = msg % (
+                    client['email'],
+                    attach['comment'], attach['name'], attach['url'])
+                params = {'text': msg}
+                action = self.trello['api'].post(
+                    resource='cards', card_id=newcard['id'],
+                    nested='actions/comments', params=params)
 
         """ Create a webhook to monitor card """
         trello_cardId = newcard['id']
-        params={
+        params = {
             'idModel': newcard['id'],
             'callbackURL': self.trello['callbackURL']
         }
@@ -319,13 +318,13 @@ class TrelloApiHandler(BaseHandler):
                     msg = "O cliente adicionou o arquivo: [%s - %s](%s)"
                     msg = msg % (
                         attach['comment'], attach['name'], attach['url'])
-                    params={'text': msg}
+                    params = {'text': msg}
                     action = self.trello['api'].post(
                         resource='cards', card_id=trello_data['id'],
                         nested='actions/comments', params=params)
             elif 'post' in trello_data:
                 """ Post new comments """
-                params={'text': trello_data['post']['comment']}
+                params = {'text': trello_data['post']['comment']}
                 action = self.trello['api'].post(
                     resource='cards',
                     card_id=trello_data['id'],
@@ -337,7 +336,7 @@ class TrelloApiHandler(BaseHandler):
 
                 data = trello_data['status']
                 # user = yield self.TrelloUsers.find_one({'email': data['email']})
-                params={'text': data['comment']}
+                params = {'text': data['comment']}
                 action = self.trello['api'].post(
                     resource='cards',
                     card_id=trello_data['id'],
@@ -352,7 +351,8 @@ class TrelloApiHandler(BaseHandler):
                 """ get activities data from mongo and return """
 
                 if 'approve' in trello_data:
-                    llist = [l for l in self.trello['card_lists'] if l['name'] == 'Aprovados']
+                    llist = [l for l in self.trello['card_lists']
+                             if l['name'] == 'Aprovados']
                     if len(llist):
                         llist = llist[0]
 
@@ -361,7 +361,7 @@ class TrelloApiHandler(BaseHandler):
                             card_id=trello_data['id'],
                             params={'idList': llist['id']}
                         )
-                    params={'text': data['comment']}
+                    params = {'text': data['comment']}
                     action = self.trello['api'].post(
                         resource='cards',
                         card_id=trello_data['id'],
@@ -369,7 +369,7 @@ class TrelloApiHandler(BaseHandler):
                         params=params
                     )
                 else:
-                    params={'text': data['comment']}
+                    params = {'text': data['comment']}
                     action = self.trello['api'].post(
                         resource='cards',
                         card_id=trello_data['id'],
@@ -378,7 +378,7 @@ class TrelloApiHandler(BaseHandler):
                     )
             else:
                 """ Updating title (card name) and description """
-                params={}
+                params = {}
                 if 'name' in trello_data:
                     params['name'] = trello_data['name']
                 if 'desc' in trello_data:
@@ -437,7 +437,7 @@ class TrelloApiHandler(BaseHandler):
                 else:
                     if not webhook or (webhook and not 'id' in webhook):
                         """ Create a webhook to monitor card """
-                        params={
+                        params = {
                             'idModel': card_id,
                             'callbackURL': self.trello['callbackURL']
                         }
@@ -445,7 +445,7 @@ class TrelloApiHandler(BaseHandler):
                             TrelloApiHandler.create_webhook, args=(self, params), id='process_data')
 
                 """ archive/unarchive card from trello """
-                params={'closed': close}
+                params = {'closed': close}
 
                 card = self.trello['api'].put(
                     resource='cards',
@@ -471,7 +471,7 @@ class TrelloApiHandler(BaseHandler):
         Value = self.input_data['action']['data']['card'][key]
         if key in depara.keys():
             resp[depara[key]] = Value
-        return(resp)
+        return (resp)
 
     @engine
     def get_trello_user(self, trello_user=None, callback=None):
@@ -492,7 +492,7 @@ class TrelloApiHandler(BaseHandler):
 
         index = len(activity['timeline'])
         trello_user = yield Task(self.get_trello_user,
-            input_data['action']['memberCreator'])
+                                 input_data['action']['memberCreator'])
         nphase = {
             'index': index,
             'phase': nlist['phase'],

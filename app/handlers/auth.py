@@ -9,6 +9,7 @@ from json import loads
 from vdecorators import api_authenticated
 from logging import info
 
+
 class UserInfoHandler(BaseHandler):
     SUPPORTED_METHODS = ("GET")
 
@@ -16,7 +17,8 @@ class UserInfoHandler(BaseHandler):
     @api_authenticated
     def get(self):
 
-        url = os.environ.get('AUTHCENTER_LOCAL', self.settings['AUTHCENTER']) + '/auth/crossuserinfo'
+        url = os.environ.get(
+            'AUTHCENTER_LOCAL', self.settings['AUTHCENTER']) + '/auth/crossuserinfo'
 
         username = self.current_user['username']
         response = yield Task(
@@ -24,7 +26,7 @@ class UserInfoHandler(BaseHandler):
         if response and response.code == 200:
             ouser = loads(response.body)['data']
             info(ouser['role'])
-            if ouser['organization'] == 'Prox_suporte' and ouser['role'] == 'Administrator':
+            if ouser['organization'] == 'Proximidade_suporte' and ouser['role'] == 'Administrator':
                 ouser['is_admin'] = True
             else:
                 ouser['is_admin'] = False
@@ -46,7 +48,8 @@ class UserRole(BaseHandler):
     @api_authenticated
     def get(self):
 
-        url = os.environ.get('AUTHCENTER_LOCAL', self.settings['AUTHCENTER']) + '/auth/user/role'
+        url = os.environ.get('AUTHCENTER_LOCAL',
+                             self.settings['AUTHCENTER']) + '/auth/user/role'
 
         response = yield Task(
             self.http_call, url=url, method='GET', body='{}', headers={})
@@ -72,7 +75,8 @@ class LogoutHandler(BaseHandler):
     @api_authenticated
     def post(self):
 
-        url = os.environ.get('AUTHCENTER_LOCAL', self.settings['AUTHCENTER']) + '/auth/crosslogout'
+        url = os.environ.get('AUTHCENTER_LOCAL',
+                             self.settings['AUTHCENTER']) + '/auth/crosslogout'
 
         response = yield Task(
             self.http_call, url=url, method='POST', body='{}', headers={})

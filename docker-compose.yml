@@ -1,71 +1,24 @@
-# version: "3"
-# networks:
-#     bridge:
-#         external:
-#             name: prox_suporte
-
-# services:
-#     db:
-#         image: mongo:4.0.8
-#         container_name: suporte_mongodb
-#         restart: always
-#         command: mongod
-#         environment:
-#             MONGO_INITDB_ROOT_USERNAME: proximidade
-#             MONGO_INITDB_ROOT_PASSWORD: v3n1d3r4
-#         volumes:
-#             - ../db/:/data/db/
-#             - ../db/:/usr/src/db
-#             - ./backup:/backup
-#         networks:
-#             bridge:
-#                 ipv4_address: 192.168.100.3
-#         ports:
-#             - 27017:27017
-#     proximidade:
-#             build:
-#                 context: ../
-#                 dockerfile: Dockerfile
-#                 args:
-#                     GITHUB_BRANCH:
-#                     GITHUB_ACCESS_TOKEN:
-#                     APP_PORT:
-#             container_name: suporte_app
-#             # image: venidera/proximidade
-#             stdin_open: true
-#             restart: unless-stopped
-#             command: "python3.6 '/usr/src/app/suporte.py' --port=5000 --debug=True"
-#             env_file:
-#                 - .env
-#             ports:
-#                 - "5000:5000"
-#             volumes:
-#                 - ../app/:/usr/src/app/
-#                 - ../scripts/:/usr/src/scripts/
-#             depends_on:
-#                 - db
-#             networks:
-#                 bridge:
-#                     ipv4_address: 170.244.105.89
-
-version: '3'
+version: '3.8'
 services:
-  suporte:
-    build:
-      context: .
-      dockerfile: Dockerfile
+  proximidade:
+    container_name: suporte-proximidade
+    build: .
     ports:
-      - "3030:3030"
+      - "3232:3232"
     environment:
-      - API_PORT=3030:3030
-      - ROOT_DOMAIN=${ROOT_DOMAIN}
-      - COOKIE_SECRET=${COOKIE_SECRET}
-      - MONGODB_URI=${MONGODB_URI}
-      - CROSS_KEY=${CROSS_KEY}
-      - GITHUB_BRANCH=${GITHUB_BRANCH}
-      - GITHUB_ACCESS_TOKEN=${GITHUB_ACCESS_TOKEN}
-      - TRELLOAPIKEY=${TRELLOAPIKEY}
-      - TRELLOAPITOKEN=${TRELLOAPITOKEN}
-      - TRELLOAPISECRET=${TRELLOAPISECRET}
-      - TRELLOMANAGER=${TRELLOMANAGER}
-      - TRELLOCALLBACK=${TRELLOCALLBACK}
+      - PORT=3000
+      - DB_TYPE=mongo
+      - PG_HOST=db
+      - PG_USERNAME=mongodb
+      - PG_PASSWORD=mongodb
+      - PG_DB=mongodb
+      - PG_PORT=5432
+    depends_on:
+      - db
+  db:
+    container_name: db_mongo
+    image: "mongo:latest"
+    ports:
+      - 8080:8080
+    volumes:
+      - ./data:/data/db

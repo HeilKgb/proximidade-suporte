@@ -6,12 +6,12 @@ from tornado.gen import coroutine, engine, Task
 from bson import ObjectId as ObjId
 from logging import info
 import string
-from vdecorators import prepare_json
-from vdecorators import check_credentials
-from handlers.mongoDBCRUD import MongoDBCRUD
+from decorators import prepare_json
+from decorators import check_credentials
+from app.handlers.mongodb import MongoDBCRUD
 from handlers.http import HTTPUtils
 
-from vdecorators import api_authenticated
+from decorators import api_authenticated
 from data_models import Activity
 import redis
 
@@ -122,7 +122,7 @@ class BaseHandler(RequestHandler, HTTPUtils, MongoDBCRUD):
                 config = yield self.TrelloConfig.find_one(
                     {'version': self.trello['version']})
                 org = self.current_user['organization']
-                if org != 'Prox_suporte':
+                if org != 'Proximidade_suporte':
                     result = [d for d in result if
                               (org in d['organizations'] and d['closed'] == False)]
 
@@ -229,12 +229,12 @@ class BaseHandler(RequestHandler, HTTPUtils, MongoDBCRUD):
                                     'url': '', 'checksum': ''}
                             del post['attachment']['thumb_checksum']
 
-            if org != 'Prox_suporte':
+            if org != 'Proximidade_suporte':
                 del activity['created_by']
                 del activity['organizations']
-        # resp = (org == 'Prox_suporte' and user['role'] == 'Administrator'), activities
+        # resp = (org == 'Proximidade_suporte' and user['role'] == 'Administrator'), activities
         resp = (
-            org == 'Prox_suporte' and self.current_user['role'] == 'Administrator'), activities
+            org == 'Proximidade_suporte' and self.current_user['role'] == 'Administrator'), activities
         callback(resp)
 
     @engine
@@ -282,9 +282,9 @@ class BaseHandler(RequestHandler, HTTPUtils, MongoDBCRUD):
         org = self.current_user['organization']
         resp = True
         input_data = self.input_data
-        if org != 'Prox_suporte' and ('activity_phase' not in self.input_data or
-                                      ('activity_phase' in self.input_data and
-                                       self.input_data['activity_phase'] != 'aprovado')):
+        if org != 'Proximidade_suporte' and ('activity_phase' not in self.input_data or
+                                             ('activity_phase' in self.input_data and
+                                              self.input_data['activity_phase'] != 'aprovado')):
             resp = False
             input_data = {}
             activity = yield self.Activities.find_one({'_id': ObjId(id)})
