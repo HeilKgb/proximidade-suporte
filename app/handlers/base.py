@@ -8,11 +8,12 @@ from logging import info
 import string
 from vdecorators import prepare_json
 from vdecorators import check_credentials
-from vutils import MongoDBCRUD, HTTPUtils
+from handlers.mongoDBCRUD import MongoDBCRUD
+from handlers.http import HTTPUtils
+
 from vdecorators import api_authenticated
 from data_models import Activity
 import redis
-
 
 
 class BaseHandler(RequestHandler, HTTPUtils, MongoDBCRUD):
@@ -123,7 +124,7 @@ class BaseHandler(RequestHandler, HTTPUtils, MongoDBCRUD):
                 org = self.current_user['organization']
                 if org != 'Prox_suporte':
                     result = [d for d in result if
-                        (org in d['organizations'] and d['closed'] == False)]
+                              (org in d['organizations'] and d['closed'] == False)]
 
                 outputs = [self.parse_output(obj, objmodel) for obj in result]
                 config['admin'], activities = yield Task(
@@ -176,7 +177,7 @@ class BaseHandler(RequestHandler, HTTPUtils, MongoDBCRUD):
         for activity in activities:
             activity_status = activity['activity_status']
             email = activity_status['user']
-            user = yield self.Users.find_one({'email': email},{'avatar' : 0})
+            user = yield self.Users.find_one({'email': email}, {'avatar': 0})
             activity_status['user'] = {
                 'name': user['fullname'],
                 'email': email,
@@ -232,7 +233,8 @@ class BaseHandler(RequestHandler, HTTPUtils, MongoDBCRUD):
                 del activity['created_by']
                 del activity['organizations']
         # resp = (org == 'Prox_suporte' and user['role'] == 'Administrator'), activities
-        resp = (org == 'Prox_suporte' and self.current_user['role'] == 'Administrator'), activities
+        resp = (
+            org == 'Prox_suporte' and self.current_user['role'] == 'Administrator'), activities
         callback(resp)
 
     @engine
@@ -281,8 +283,8 @@ class BaseHandler(RequestHandler, HTTPUtils, MongoDBCRUD):
         resp = True
         input_data = self.input_data
         if org != 'Prox_suporte' and ('activity_phase' not in self.input_data or
-                ('activity_phase' in self.input_data and
-                 self.input_data['activity_phase'] != 'aprovado')):
+                                      ('activity_phase' in self.input_data and
+                                       self.input_data['activity_phase'] != 'aprovado')):
             resp = False
             input_data = {}
             activity = yield self.Activities.find_one({'_id': ObjId(id)})
@@ -293,8 +295,8 @@ class BaseHandler(RequestHandler, HTTPUtils, MongoDBCRUD):
                     input_data['timeline'] = timeline
             if 'activity_status' in self.input_data.keys():
                 activity_status = self.input_data['activity_status']
-                if 'status' in  activity_status and \
-                    activity_status['status'] == 'finalizado':
+                if 'status' in activity_status and \
+                        activity_status['status'] == 'finalizado':
                     resp = True
                     input_data['activity_status'] = activity_status
         response = resp, input_data
@@ -304,7 +306,8 @@ class BaseHandler(RequestHandler, HTTPUtils, MongoDBCRUD):
     def adjust_input_data(self, input_data, callback=None):
         """ Adjusts input data before save on database """
 
-        trello_data = input_data['trello_data'] if 'trello_data' in input_data else {}
+        trello_data = input_data['trello_data'] if 'trello_data' in input_data else {
+        }
         data = input_data['data']
         if ('module' in data.keys()
                 and 'id' in data['module'].keys()):

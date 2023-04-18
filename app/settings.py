@@ -9,7 +9,7 @@ import tornado.template
 from tornado.options import define, options
 from motor import MotorClient as connect
 from logging import info, warning
-from vutils import gen_token
+from secrets import token_hex
 from apscheduler.schedulers.tornado import TornadoScheduler
 from tornado.gen import engine
 
@@ -59,11 +59,12 @@ info('MongoDB Database set to: %s' % mongo_uri)
 config['db'] = db
 
 # Security settings
-config['cookie_secret'] = os.environ.get('COOKIE_SECRET', gen_token(50))
+config['cookie_secret'] = os.environ.get('COOKIE_SECRET', token_hex(50))
 config['max_days_valid'] = 5  # Days to a token or cookie to be valid
 
 # Redis config
-config['redisdb_uri'] = os.environ.get('REDISDB_URI', "redis://prox_suporte_redis:6379")
+config['redisdb_uri'] = os.environ.get(
+    'REDISDB_URI', "redis://prox_suporte_redis:6379")
 
 # URL config
 config['APP_PROTOCOL'] = os.environ.get('APP_PROTOCOL', 'https')
@@ -110,13 +111,15 @@ TRELLOAPISECRET = os.environ.get('TRELLOAPISECRET', '')
 info(config['APPURL'])
 info(os.environ.get('TRELLOCALLBACK', '/trello/webhooks'))
 
-TRELLOCALLBACK = config['APPURL'] + os.environ.get('TRELLOCALLBACK', '/trello/webhooks')
-TRELLOORGANIZATION= os.environ.get('TRELLOORGANIZATION', 'proxsuportedesenvolvimento')
+TRELLOCALLBACK = config['APPURL'] + \
+    os.environ.get('TRELLOCALLBACK', '/trello/webhooks')
+TRELLOORGANIZATION = os.environ.get(
+    'TRELLOORGANIZATION', 'proxsuportedesenvolvimento')
 TRELLOMANAGER = os.environ.get('TRELLOMANAGER', '')
 TRELLOSUPORTBOARD = os.environ.get('TRELLOSUPORTBOARD',
-    'Suporte Desenvolvimento' if os.environ.get('GITHUB_BRANCH', '') == 'develop' else (
-        'Suporte Release' if os.environ.get('GITHUB_BRANCH', '') == 'release' else 'Suporte')
-)
+                                   'Suporte Desenvolvimento' if os.environ.get('GITHUB_BRANCH', '') == 'develop' else (
+                                       'Suporte Release' if os.environ.get('GITHUB_BRANCH', '') == 'release' else 'Suporte')
+                                   )
 
 info('==========================================================================')
 info('TRELLOAPIKEY: %s', TRELLOAPIKEY)
@@ -131,15 +134,15 @@ info('==========================================================================
 # Trello
 trello_api = manager = trello_board = card_lists = None
 if (TRELLOAPIKEY and TRELLOAPITOKEN and TRELLOAPISECRET and
-    TRELLOMANAGER and TRELLOCALLBACK):
+        TRELLOMANAGER and TRELLOCALLBACK):
     trello_api = VTrello(api_key=TRELLOAPIKEY, api_token=TRELLOAPITOKEN)
     if not trello_api.check_connection():
         warning('Conexão com a API do Trello falhou')
         message = 'Conexão com a API do Trello falhou'
         subject = 'Erro no Trello Api.'
         sender.send_email(toaddr='vanessa.sena@venidera.com',
-            fromaddr='prox@venidera.com', subject=subject,
-            message=message, is_html=True)
+                          fromaddr='prox@venidera.com', subject=subject,
+                          message=message, is_html=True)
     else:
         # Trello Manager Member
         manager = trello_api.get(
@@ -153,8 +156,8 @@ if (TRELLOAPIKEY and TRELLOAPITOKEN and TRELLOAPISECRET and
             message = 'Trello Manager não encontrado'
             subject = 'Erro no Trello Api.'
             sender.send_email(toaddr='vanessa.sena@venidera.com',
-                fromaddr='suporte.prox@venidera.com', subject=subject,
-                message=message, is_html=True)
+                              fromaddr='suporte.prox@venidera.com', subject=subject,
+                              message=message, is_html=True)
 
         else:
             # Get Organization Id
@@ -162,18 +165,19 @@ if (TRELLOAPIKEY and TRELLOAPITOKEN and TRELLOAPISECRET and
             # if orgName:
             orgList = trello_api.get(
                 resource='members',
-                member_id = manager['id'],
+                member_id=manager['id'],
                 nested="organizations",
-                params={"fields": ["name" , "displayName"]}
+                params={"fields": ["name", "displayName"]}
             )
-            orgId = next((x['id'] for x in orgList if orgName in x['name']), None)
+            orgId = next((x['id']
+                         for x in orgList if orgName in x['name']), None)
             if not orgId:
                 warning('Trello Organization id não encontrado.')
                 message = 'Trello Organization id não encontrado'
                 subject = 'Erro no Trello Api.'
                 sender.send_email(toaddr='vanessa.sena@venidera.com',
-                    fromaddr='suporte.prox@venidera.com', subject=subject,
-                    message=message, is_html=True)
+                                  fromaddr='suporte.prox@venidera.com', subject=subject,
+                                  message=message, is_html=True)
             else:
                 # Get Suporte Board of organization
                 boards = trello_api.get(
@@ -188,14 +192,14 @@ if (TRELLOAPIKEY and TRELLOAPITOKEN and TRELLOAPISECRET and
                     message = 'Board Suporte não encontrado'
                     subject = 'Erro no Trello Api.'
                     sender.send_email(toaddr='vanessa.sena@venidera.com',
-                        fromaddr='suporte.prox@venidera.com', subject=subject,
-                        message=message, is_html=True)
+                                      fromaddr='suporte.prox@venidera.com', subject=subject,
+                                      message=message, is_html=True)
                 else:
                     trello_board = boards[0]
                     # Get Card List
                     card_lists = trello_api.get(
                         resource='boards',
-                        board_id = trello_board['id'],
+                        board_id=trello_board['id'],
                         nested='lists',
                         params={'fields': 'name'}
                     )
